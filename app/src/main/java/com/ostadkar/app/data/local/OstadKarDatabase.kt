@@ -2,9 +2,7 @@ package com.ostadkar.app.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.ostadkar.app.data.local.converter.Converters
 import com.ostadkar.app.data.local.dao.*
 import com.ostadkar.app.data.local.entity.*
 import kotlinx.coroutines.CoroutineScope
@@ -30,7 +28,6 @@ import kotlinx.coroutines.launch
     version = 1,
     exportSchema = true
 )
-@TypeConverters(Converters::class)
 abstract class OstadKarDatabase : RoomDatabase() {
     abstract fun customerDao(): CustomerDao
     abstract fun projectDao(): ProjectDao
