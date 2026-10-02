@@ -14,13 +14,9 @@ android {
         applicationId = "com.ostadkar.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.0.2"
+        versionCode = 4
+        versionName = "1.0.3"
         multiDexEnabled = true
-        ndk {
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
-        }
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -40,7 +36,6 @@ android {
 
     buildTypes {
         release {
-            // minify off for first market release to avoid R8 issues
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(
@@ -51,9 +46,6 @@ android {
         }
         debug {
             isMinifyEnabled = false
-            // Debug also uses release keystore so install upgrades work with same signature
-            // Comment next line if you want pure debug signature during development:
-            // signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -76,22 +68,10 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
-        // Uncompressed + page-aligned .so files — required on many devices
+        // Exclude all native .so to avoid "problem parsing the package" on many devices
         jniLibs {
-            useLegacyPackaging = true
+            excludes += setOf("**/*.so")
         }
-    }
-
-    // Only real phone ABIs (skip x86 emulator libs)
-    splits {
-        abi {
-            isEnable = false
-        }
-    }
-
-    // Explicit v1+v2 for broader device install compatibility
-    androidResources {
-        // keep defaults
     }
 }
 
@@ -100,13 +80,11 @@ ksp {
 }
 
 dependencies {
-    // Core
     implementation("androidx.multidex:multidex:2.0.1")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
     implementation("androidx.activity:activity-compose:1.9.2")
 
-    // Compose BOM
     val composeBom = platform("androidx.compose:compose-bom:2024.09.02")
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -118,32 +96,23 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.foundation:foundation")
 
-    // Navigation
     implementation("androidx.navigation:navigation-compose:2.8.1")
-
-    // Lifecycle & ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
 
-    // Room
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
-    // Hilt
     implementation("com.google.dagger:hilt-android:2.52")
     ksp("com.google.dagger:hilt-compiler:2.52")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
-
-    // Desugaring for java.time on older APIs
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
 
-    // Debug
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

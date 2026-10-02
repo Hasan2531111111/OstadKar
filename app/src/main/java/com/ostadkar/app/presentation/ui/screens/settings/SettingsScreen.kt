@@ -57,7 +57,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                 SettingRow(
                     icon = Icons.Default.PhoneAndroid,
                     title = "نسخه",
-                    subtitle = "۱.۰.۲ (کد ۳)"
+                    subtitle = "۱.۰.۳ (کد ۴)"
                 )
                 HorizontalDivider()
                 SettingRow(
