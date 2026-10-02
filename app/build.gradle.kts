@@ -12,11 +12,14 @@ android {
 
     defaultConfig {
         applicationId = "com.ostadkar.app"
-        minSdk = 26
+        minSdk = 24
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.0.1"
+        versionCode = 3
+        versionName = "1.0.2"
         multiDexEnabled = true
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -72,6 +75,17 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+        // Uncompressed + page-aligned .so files — required on many devices
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
+    // Only real phone ABIs (skip x86 emulator libs)
+    splits {
+        abi {
+            isEnable = false
         }
     }
 
