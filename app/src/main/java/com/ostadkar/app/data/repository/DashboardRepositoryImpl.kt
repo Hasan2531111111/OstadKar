@@ -41,6 +41,7 @@ class DashboardRepositoryImpl @Inject constructor(
     }
 
     override fun observeProjectFinancial(projectId: Long): Flow<FinancialSummary> {
+        // combine with 6 flows uses Array transform
         return combine(
             workItemDao.observeProjectTotal(projectId),
             customerPaymentDao.observeProjectTotal(projectId),
@@ -48,7 +49,13 @@ class DashboardRepositoryImpl @Inject constructor(
             overtimeDao.observeProjectOvertimeTotal(projectId),
             workerPaymentDao.observeProjectTotal(projectId),
             expenseDao.observeProjectTotal(projectId)
-        ) { income, received, baseWage, overtime, paid, expenses ->
+        ) { values: Array<Long> ->
+            val income = values[0]
+            val received = values[1]
+            val baseWage = values[2]
+            val overtime = values[3]
+            val paid = values[4]
+            val expenses = values[5]
             val wages = baseWage + overtime
             val totalExpenses = wages + expenses
             FinancialSummary(
