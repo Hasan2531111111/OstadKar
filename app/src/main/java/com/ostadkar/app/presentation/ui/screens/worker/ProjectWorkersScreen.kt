@@ -16,7 +16,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Today
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Schedule
@@ -46,6 +49,7 @@ import com.ostadkar.app.domain.model.ProjectWorker
 import com.ostadkar.app.presentation.ui.components.DailyWorkTypeLabels
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.MoneyFormatter
+import com.ostadkar.app.presentation.ui.components.PersianDateFormatter
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
 import com.ostadkar.app.presentation.ui.components.PaymentMethodLabels
 import com.ostadkar.app.presentation.ui.components.WorkerTypeLabels
@@ -112,6 +116,9 @@ fun ProjectWorkersScreen(
                         onOtHours = viewModel::updateOvertimeHours,
                         onOtRate = viewModel::updateOvertimeRate,
                         onNotes = viewModel::updateDailyNotes,
+                        onPrevDay = { viewModel.shiftDailyDate(-1) },
+                        onNextDay = { viewModel.shiftDailyDate(1) },
+                        onToday = viewModel::setDailyDateToday,
                         onSave = viewModel::saveDailyWork,
                         onCancel = viewModel::hideDailyForm
                     )
@@ -168,9 +175,22 @@ fun ProjectWorkersScreen(
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(name, fontWeight = FontWeight.SemiBold)
                             Text(
+                                PersianDateFormatter.formatFull(dw.workDate),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
                                 "${DailyWorkTypeLabels.label(dw.workType)} — ${MoneyFormatter.format(dw.baseWage)}",
                                 style = MaterialTheme.typography.bodyMedium
                             )
+                            if (dw.notes.isNotBlank()) {
+                                Text(
+                                    dw.notes,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
@@ -193,6 +213,12 @@ fun ProjectWorkersScreen(
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(name, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                PersianDateFormatter.formatFull(p.paymentDate),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
                             Text(
                                 "${MoneyFormatter.format(p.amount)} — ${PaymentMethodLabels.label(p.method)}",
                                 style = MaterialTheme.typography.bodyMedium
@@ -351,6 +377,9 @@ private fun DailyWorkFormCard(
     onOtHours: (String) -> Unit,
     onOtRate: (String) -> Unit,
     onNotes: (String) -> Unit,
+    onPrevDay: () -> Unit,
+    onNextDay: () -> Unit,
+    onToday: () -> Unit,
     onSave: () -> Unit,
     onCancel: () -> Unit
 ) {
@@ -368,6 +397,39 @@ private fun DailyWorkFormCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
+            // تاریخ شمسی کامل با روز هفته
+            Text("تاریخ کارکرد", style = MaterialTheme.typography.labelLarge)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onPrevDay) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = "روز قبل"
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = PersianDateFormatter.formatFull(
+                            if (form.workDate > 0) form.workDate else PersianDateFormatter.startOfDay()
+                        ),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    TextButton(onClick = onToday) {
+                        Text("برو به امروز")
+                    }
+                }
+                IconButton(onClick = onNextDay) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "روز بعد"
+                    )
+                }
+            }
             Text("نوع کارکرد", style = MaterialTheme.typography.labelLarge)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(

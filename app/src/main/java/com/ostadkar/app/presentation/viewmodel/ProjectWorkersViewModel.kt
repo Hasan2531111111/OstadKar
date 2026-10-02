@@ -12,6 +12,7 @@ import com.ostadkar.app.domain.repository.ProjectWorkerRepository
 import com.ostadkar.app.domain.repository.WorkerPaymentRepository
 import com.ostadkar.app.domain.repository.WorkerRepository
 import com.ostadkar.app.domain.usecase.WageCalculator
+import com.ostadkar.app.presentation.ui.components.PersianDateFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,6 +39,7 @@ data class DailyWorkForm(
     val workerId: Long = 0,
     val workerName: String = "",
     val dailyWage: Long = 0,
+    val workDate: Long = 0L,
     val workType: String = "full_day",
     val hours: String = "",
     val overtimeHours: String = "",
@@ -153,7 +155,8 @@ class ProjectWorkersViewModel @Inject constructor(
             show = true,
             workerId = worker.workerId,
             workerName = worker.workerName,
-            dailyWage = worker.dailyWage ?: 0L
+            dailyWage = worker.dailyWage ?: 0L,
+            workDate = PersianDateFormatter.startOfDay()
         )
     }
 
@@ -166,6 +169,16 @@ class ProjectWorkersViewModel @Inject constructor(
     fun updateOvertimeHours(v: String) { _dailyForm.value = _dailyForm.value.copy(overtimeHours = v.filterDigits()) }
     fun updateOvertimeRate(v: String) { _dailyForm.value = _dailyForm.value.copy(overtimeRate = v.filter { it.isDigit() }) }
     fun updateDailyNotes(v: String) { _dailyForm.value = _dailyForm.value.copy(notes = v) }
+
+    fun shiftDailyDate(days: Int) {
+        val f = _dailyForm.value
+        val base = if (f.workDate > 0) f.workDate else PersianDateFormatter.startOfDay()
+        _dailyForm.value = f.copy(workDate = PersianDateFormatter.addDays(base, days))
+    }
+
+    fun setDailyDateToday() {
+        _dailyForm.value = _dailyForm.value.copy(workDate = PersianDateFormatter.startOfDay())
+    }
 
     fun saveDailyWork() {
         val f = _dailyForm.value
@@ -181,7 +194,7 @@ class ProjectWorkersViewModel @Inject constructor(
                 DailyWork(
                     projectId = projectId,
                     workerId = f.workerId,
-                    workDate = System.currentTimeMillis(),
+                    workDate = PersianDateFormatter.startOfDay(f.workDate.takeIf { it > 0 } ?: System.currentTimeMillis()),
                     workType = f.workType,
                     hours = hours,
                     baseWage = base,
