@@ -29,6 +29,8 @@ android {
                 storePassword = "OstadKar2026Release!"
                 keyAlias = "ostadkar"
                 keyPassword = "OstadKar2026Release!"
+                enableV1Signing = true
+                enableV2Signing = true
             }
         }
     }
@@ -71,6 +73,11 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+
+    // Explicit v1+v2 for broader device install compatibility
+    androidResources {
+        // keep defaults
     }
 }
 
