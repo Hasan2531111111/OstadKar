@@ -1,0 +1,13 @@
+========================================
+  OstadKar Release Keystore Credentials
+  نگه دارید — برای آپدیت مارکت ضروری است
+========================================
+Keystore file : keystore/ostadkar-release.jks
+Store password: OstadKar2026Release!
+Key alias     : ostadkar
+Key password  : OstadKar2026Release!
+Validity      : 25 years
+Algorithm     : RSA 2048
+
+هشدار: این فایل و keystore را گم نکنید.
+بدون همین امضا نمی‌توانید نسخه جدید را در مارکت آپدیت کنید.
