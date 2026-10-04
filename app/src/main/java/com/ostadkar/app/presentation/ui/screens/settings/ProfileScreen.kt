@@ -13,14 +13,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -34,15 +39,19 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -51,14 +60,24 @@ import com.ostadkar.app.presentation.ui.theme.Primary
 import com.ostadkar.app.presentation.ui.theme.SoftBlue
 import com.ostadkar.app.presentation.viewmodel.ProfileViewModel
 import java.io.File
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun ProfileScreen(
     onBack: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val form by viewModel.form.collectAsState()
+    val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+
+    val nameBring = remember { BringIntoViewRequester() }
+    val specialtyBring = remember { BringIntoViewRequester() }
+    val phoneBring = remember { BringIntoViewRequester() }
+    val cityBring = remember { BringIntoViewRequester() }
 
     val picker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -66,9 +85,10 @@ fun ProfileScreen(
         if (uri != null) viewModel.setPhotoFromUri(uri)
     }
 
-    LaunchedEffect(form.saved) {
-        if (form.saved) {
-            // stay on screen; user can go back
+    fun bring(requester: BringIntoViewRequester) {
+        scope.launch {
+            delay(280)
+            requester.bringIntoView()
         }
     }
 
@@ -79,11 +99,13 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp),
+                .imePadding()
+                .navigationBarsPadding()
+                .verticalScroll(scrollState)
+                .padding(horizontal = 20.dp)
+                .padding(top = 12.dp, bottom = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Avatar
             Box(
                 modifier = Modifier
                     .size(120.dp)
@@ -144,32 +166,54 @@ fun ProfileScreen(
                         onValueChange = viewModel::updateName,
                         label = { Text("نام و نام خانوادگی *") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .bringIntoViewRequester(nameBring)
+                            .onFocusEvent { if (it.isFocused) bring(nameBring) },
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                     )
                     OutlinedTextField(
                         value = form.specialty,
                         onValueChange = viewModel::updateSpecialty,
                         label = { Text("تخصص (مثلاً نقاش، کاشی‌کار)") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .bringIntoViewRequester(specialtyBring)
+                            .onFocusEvent { if (it.isFocused) bring(specialtyBring) },
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                     )
                     OutlinedTextField(
                         value = form.phone,
                         onValueChange = viewModel::updatePhone,
                         label = { Text("شماره تماس") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .bringIntoViewRequester(phoneBring)
+                            .onFocusEvent { if (it.isFocused) bring(phoneBring) },
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Phone,
+                            imeAction = ImeAction.Next
+                        )
                     )
                     OutlinedTextField(
                         value = form.city,
                         onValueChange = viewModel::updateCity,
                         label = { Text("شهر") },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .bringIntoViewRequester(cityBring)
+                            .onFocusEvent { if (it.isFocused) bring(cityBring) },
+                        shape = RoundedCornerShape(12.dp),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = { focusManager.clearFocus() }
+                        )
                     )
                 }
             }
@@ -186,7 +230,10 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(
-                onClick = { viewModel.save() },
+                onClick = {
+                    focusManager.clearFocus()
+                    viewModel.save()
+                },
                 enabled = !form.isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -200,7 +247,8 @@ fun ProfileScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            // فضای اضافه تا آخرین فیلد زیر کیبورد نماند
+            Spacer(modifier = Modifier.height(120.dp))
         }
     }
 }
