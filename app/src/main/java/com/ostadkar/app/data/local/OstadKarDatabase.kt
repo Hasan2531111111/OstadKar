@@ -23,9 +23,10 @@ import kotlinx.coroutines.launch
         CustomerPaymentEntity::class,
         WorkerPaymentEntity::class,
         ProjectExpenseEntity::class,
-        ProjectStageEntity::class
+        ProjectStageEntity::class,
+        UserProfileEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class OstadKarDatabase : RoomDatabase() {
@@ -42,6 +43,7 @@ abstract class OstadKarDatabase : RoomDatabase() {
     abstract fun workerPaymentDao(): WorkerPaymentDao
     abstract fun projectExpenseDao(): ProjectExpenseDao
     abstract fun projectStageDao(): ProjectStageDao
+    abstract fun userProfileDao(): UserProfileDao
 
     companion object {
         const val DATABASE_NAME = "ostadkar.db"

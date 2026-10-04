@@ -100,3 +100,20 @@ interface DashboardRepository {
     fun observeHomeDashboard(): Flow<HomeDashboard>
     fun observeProjectFinancial(projectId: Long): Flow<FinancialSummary>
 }
+
+
+data class UserProfile(
+    val displayName: String = "",
+    val specialty: String = "",
+    val phone: String = "",
+    val city: String = "",
+    val photoPath: String = ""
+) {
+    val hasName: Boolean get() = displayName.isNotBlank()
+}
+
+interface UserProfileRepository {
+    fun observe(): kotlinx.coroutines.flow.Flow<UserProfile>
+    suspend fun get(): UserProfile
+    suspend fun save(profile: UserProfile)
+}

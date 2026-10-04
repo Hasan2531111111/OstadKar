@@ -12,6 +12,7 @@ object Routes {
     const val PAYMENTS = "payments"
     const val REPORTS = "reports"
     const val SETTINGS = "settings"
+    const val PROFILE = "profile"
 
     // Project sub-screens
     const val PROJECT_WORK_ITEMS = "project/{projectId}/work_items"

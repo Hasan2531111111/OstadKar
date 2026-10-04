@@ -1,5 +1,6 @@
 package com.ostadkar.app.presentation.ui.screens.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.Card
@@ -32,10 +34,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
+import com.ostadkar.app.presentation.ui.theme.Primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    onEditProfile: () -> Unit = {}
+) {
     Scaffold(
         topBar = { OstadTopBar(title = "تنظیمات", onBack = onBack) }
     ) { padding ->
@@ -47,76 +53,59 @@ fun SettingsScreen(onBack: () -> Unit) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            SectionCard(title = "حساب کاربری") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onEditProfile() }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(Icons.Default.Person, contentDescription = null, tint = Primary)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("پروفایل من", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            "نام، تخصص، شماره و عکس پروفایل",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Text("ویرایش", color = Primary, fontWeight = FontWeight.SemiBold)
+                }
+            }
+
             SectionCard(title = "درباره برنامه") {
-                SettingRow(
-                    icon = Icons.Default.Info,
-                    title = "نام برنامه",
-                    subtitle = "استادکار — مدیریت پروژه ساختمانی"
-                )
+                SettingRow(Icons.Default.Info, "نام برنامه", "استادکار — مدیریت پروژه ساختمانی")
                 HorizontalDivider()
-                SettingRow(
-                    icon = Icons.Default.PhoneAndroid,
-                    title = "نسخه",
-                    subtitle = "۱.۱.۰ (کد ۵)"
-                )
+                SettingRow(Icons.Default.PhoneAndroid, "نسخه", "۱.۱.۲")
                 HorizontalDivider()
-                SettingRow(
-                    icon = Icons.Default.Storage,
-                    title = "حالت کار",
-                    subtitle = "کاملاً آفلاین — همه داده‌ها روی همین گوشی ذخیره می‌شوند"
-                )
+                SettingRow(Icons.Default.Storage, "حالت کار", "کاملاً آفلاین — همه داده‌ها روی همین گوشی")
             }
 
             SectionCard(title = "نمایش و زبان") {
-                SettingRow(
-                    icon = Icons.Default.Language,
-                    title = "زبان",
-                    subtitle = "فارسی (راست‌چین)"
-                )
+                SettingRow(Icons.Default.Language, "زبان", "فارسی (راست‌چین)")
                 HorizontalDivider()
-                SettingRow(
-                    icon = Icons.Default.DarkMode,
-                    title = "حالت تاریک",
-                    subtitle = "از تنظیمات سیستم گوشی پیروی می‌کند"
-                )
+                SettingRow(Icons.Default.DarkMode, "حالت تاریک", "از تنظیمات سیستم گوشی پیروی می‌کند")
             }
 
             SectionCard(title = "تقویم و واحد پول") {
-                SettingRow(
-                    icon = Icons.Default.Info,
-                    title = "تقویم",
-                    subtitle = "شمسی (جلالی) همراه با روز هفته"
-                )
+                SettingRow(Icons.Default.Info, "تقویم", "شمسی (جلالی) همراه با روز هفته")
                 HorizontalDivider()
-                SettingRow(
-                    icon = Icons.Default.Info,
-                    title = "واحد پول",
-                    subtitle = "تومان — با جداکننده هزارگان فارسی"
-                )
+                SettingRow(Icons.Default.Info, "واحد پول", "تومان — با جداکننده هزارگان فارسی")
             }
 
             SectionCard(title = "پشتیبان‌گیری") {
                 Text(
-                    text = "داده‌ها داخل حافظه برنامه ذخیره می‌شوند. برای پشتیبان‌گیری، در نسخه‌های بعدی امکان خروجی Excel/PDF اضافه خواهد شد. فعلاً از پاک کردن حافظه برنامه در تنظیمات گوشی خودداری کنید.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            SectionCard(title = "راهنمای سریع") {
-                Text(
-                    text = "۱. پروژه جدید بسازید و مشتری را مشخص کنید.\n" +
-                        "۲. اقلام کار و اندازه‌گیری را ثبت کنید.\n" +
-                        "۳. کارگران را به پروژه اضافه و کارکرد روزانه ثبت کنید.\n" +
-                        "۴. پرداخت مشتری و دستمزد را وارد کنید.\n" +
-                        "۵. از بخش گزارش‌ها وضعیت مالی را ببینید.",
+                    text = "داده‌ها داخل حافظه برنامه ذخیره می‌شوند. از پاک کردن حافظه برنامه در تنظیمات گوشی خودداری کنید.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             Text(
-                text = "© ۱۴۰۵ استادکار — نسخه آزمایشی بازار",
+                text = "© استادکار — نسخه آزمایشی",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
@@ -126,10 +115,7 @@ fun SettingsScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun SectionCard(
-    title: String,
-    content: @Composable () -> Unit
-) {
+private fun SectionCard(title: String, content: @Composable () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -138,40 +124,24 @@ private fun SectionCard(
         )
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
+            Text(text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             content()
         }
     }
 }
 
 @Composable
-private fun SettingRow(
-    icon: ImageVector,
-    title: String,
-    subtitle: String
-) {
+private fun SettingRow(icon: ImageVector, title: String, subtitle: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
-        )
+        Icon(imageVector = icon, contentDescription = null, tint = Primary)
         Column(modifier = Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

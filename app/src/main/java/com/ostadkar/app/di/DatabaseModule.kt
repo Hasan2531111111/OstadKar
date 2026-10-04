@@ -60,4 +60,6 @@ object DatabaseModule {
     @Provides fun provideWorkerPaymentDao(db: OstadKarDatabase): WorkerPaymentDao = db.workerPaymentDao()
     @Provides fun provideProjectExpenseDao(db: OstadKarDatabase): ProjectExpenseDao = db.projectExpenseDao()
     @Provides fun provideProjectStageDao(db: OstadKarDatabase): ProjectStageDao = db.projectStageDao()
+
+    @Provides fun provideUserProfileDao(db: OstadKarDatabase): UserProfileDao = db.userProfileDao()
 }

@@ -42,6 +42,7 @@ import com.ostadkar.app.presentation.ui.screens.project.ProjectsScreen
 import com.ostadkar.app.presentation.ui.screens.project.WorkItemsScreen
 import com.ostadkar.app.presentation.ui.screens.report.ReportsScreen
 import com.ostadkar.app.presentation.ui.screens.settings.SettingsScreen
+import com.ostadkar.app.presentation.ui.screens.settings.ProfileScreen
 import com.ostadkar.app.presentation.ui.screens.worker.ProjectWorkersScreen
 import com.ostadkar.app.presentation.ui.screens.worker.WorkersScreen
 import com.ostadkar.app.presentation.ui.theme.Primary
@@ -121,6 +122,7 @@ fun OstadKarNavHost() {
                     onNavigateToPayments = { navController.navigate(Routes.PAYMENTS) },
                     onNavigateToReports = { navController.navigate(Routes.REPORTS) },
                     onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
+                    onNavigateToProfile = { navController.navigate(Routes.PROFILE) },
                     onNewProject = { navController.navigate(Routes.NEW_PROJECT) },
                     onProjectClick = { id -> navController.navigate(Routes.projectDetail(id)) }
                 )
@@ -243,7 +245,14 @@ fun OstadKarNavHost() {
             }
 
             composable(Routes.SETTINGS) {
-                SettingsScreen(onBack = { navController.popBackStack() })
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    onEditProfile = { navController.navigate(Routes.PROFILE) }
+                )
+            }
+
+            composable(Routes.PROFILE) {
+                ProfileScreen(onBack = { navController.popBackStack() })
             }
         }
     }

@@ -59,6 +59,11 @@ import com.ostadkar.app.presentation.ui.theme.SoftGreen
 import com.ostadkar.app.presentation.ui.theme.SoftOrange
 import com.ostadkar.app.presentation.ui.theme.SoftPurple
 import com.ostadkar.app.presentation.viewmodel.HomeViewModel
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,13 +74,17 @@ fun HomeScreen(
     onNavigateToPayments: () -> Unit,
     onNavigateToReports: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToProfile: () -> Unit = {},
     onNewProject: () -> Unit,
     onProjectClick: (Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val dashboard by viewModel.dashboard.collectAsState()
     val projects by viewModel.recentProjects.collectAsState()
+    val profile by viewModel.profile.collectAsState()
     val activeCount = dashboard.activeProjectsCount
+    val displayName = profile.displayName.ifBlank { "استادکار" }
+    val greeting = if (profile.hasName) "سلام، $displayName" else "سلام، استادکار"
 
     Scaffold(
         floatingActionButton = {
@@ -107,19 +116,59 @@ fun HomeScreen(
                         .padding(start = 24.dp, end = 24.dp, top = 40.dp, bottom = 36.dp)
                 ) {
                     Column {
-                        Text(
-                            text = "استاد کار",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White.copy(alpha = 0.9f)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "سلام، استادکار",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onNavigateToProfile() }
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.White.copy(alpha = 0.2f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (profile.photoPath.isNotBlank() && File(profile.photoPath).exists()) {
+                                    AsyncImage(
+                                        model = File(profile.photoPath),
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    Text(
+                                        text = displayName.firstOrNull()?.toString() ?: "ا",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.size(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "استاد کار",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color.White.copy(alpha = 0.9f)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = greeting,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                                if (profile.specialty.isNotBlank()) {
+                                    Text(
+                                        text = profile.specialty,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color.White.copy(alpha = 0.8f)
+                                    )
+                                }
+                            }
+                        }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = if (activeCount > 0)
