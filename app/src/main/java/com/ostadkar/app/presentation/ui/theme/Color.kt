@@ -2,72 +2,70 @@ package com.ostadkar.app.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary - Construction / Professional Blue
-val Primary = Color(0xFF1565C0)
+// Premium brand palette (matches Figma redesign)
+val Primary = Color(0xFF0D47A1)
+val PrimaryLight = Color(0xFF1F6BD9)
 val OnPrimary = Color(0xFFFFFFFF)
-val PrimaryContainer = Color(0xFFD1E4FF)
+val PrimaryContainer = Color(0xFFE5F0FF)
 val OnPrimaryContainer = Color(0xFF001D36)
 
-// Secondary - Warm accent for actions
-val Secondary = Color(0xFFE65100)
+val Secondary = Color(0xFFFF8F00)
 val OnSecondary = Color(0xFFFFFFFF)
-val SecondaryContainer = Color(0xFFFFDBCF)
-val OnSecondaryContainer = Color(0xFF380D00)
+val SecondaryContainer = Color(0xFFFFF0E0)
+val OnSecondaryContainer = Color(0xFF3D1F00)
 
-// Tertiary
-val Tertiary = Color(0xFF2E7D32)
+val Tertiary = Color(0xFF1F9E6B)
 val OnTertiary = Color(0xFFFFFFFF)
-val TertiaryContainer = Color(0xFFC8E6C9)
+val TertiaryContainer = Color(0xFFE0F5EB)
 val OnTertiaryContainer = Color(0xFF002107)
 
-// Error
-val Error = Color(0xFFB3261E)
+val Error = Color(0xFFE64747)
 val OnError = Color(0xFFFFFFFF)
-val ErrorContainer = Color(0xFFF9DEDC)
+val ErrorContainer = Color(0xFFFFEBEE)
 val OnErrorContainer = Color(0xFF410E0B)
 
-// Neutral / Background
-val Background = Color(0xFFF8F9FA)
-val OnBackground = Color(0xFF1A1C1E)
+val Background = Color(0xFFF1F4F7)
+val OnBackground = Color(0xFF1A1F2E)
 val Surface = Color(0xFFFFFFFF)
-val OnSurface = Color(0xFF1A1C1E)
-val SurfaceVariant = Color(0xFFE0E3E7)
-val OnSurfaceVariant = Color(0xFF43474E)
-val Outline = Color(0xFF73777F)
-val OutlineVariant = Color(0xFFC3C7CF)
+val OnSurface = Color(0xFF1A1F2E)
+val SurfaceVariant = Color(0xFFE8ECF1)
+val OnSurfaceVariant = Color(0xFF6B758A)
+val Outline = Color(0xFF8A93A3)
+val OutlineVariant = Color(0xFFD0D5DD)
 
-// Dark theme colors
+// Dark
 val PrimaryDark = Color(0xFF9ECAFF)
 val OnPrimaryDark = Color(0xFF003258)
 val PrimaryContainerDark = Color(0xFF00497D)
 val OnPrimaryContainerDark = Color(0xFFD1E4FF)
-
-val SecondaryDark = Color(0xFFFFB59A)
-val OnSecondaryDark = Color(0xFF5B1A00)
-val SecondaryContainerDark = Color(0xFF812800)
+val SecondaryDark = Color(0xFFFFB74D)
+val OnSecondaryDark = Color(0xFF3D1F00)
+val SecondaryContainerDark = Color(0xFF8A4B00)
 val OnSecondaryContainerDark = Color(0xFFFFDBCF)
-
-val TertiaryDark = Color(0xFFA5D6A7)
+val TertiaryDark = Color(0xFF6FDBA8)
 val OnTertiaryDark = Color(0xFF003910)
 val TertiaryContainerDark = Color(0xFF005319)
 val OnTertiaryContainerDark = Color(0xFFC8E6C9)
-
 val ErrorDark = Color(0xFFF2B8B5)
 val OnErrorDark = Color(0xFF601410)
 val ErrorContainerDark = Color(0xFF8C1D18)
 val OnErrorContainerDark = Color(0xFFF9DEDC)
-
-val BackgroundDark = Color(0xFF111416)
+val BackgroundDark = Color(0xFF0F1218)
 val OnBackgroundDark = Color(0xFFE2E2E5)
-val SurfaceDark = Color(0xFF1A1C1E)
+val SurfaceDark = Color(0xFF1A1F2E)
 val OnSurfaceDark = Color(0xFFE2E2E5)
-val SurfaceVariantDark = Color(0xFF43474E)
+val SurfaceVariantDark = Color(0xFF2A3142)
 val OnSurfaceVariantDark = Color(0xFFC3C7CF)
 val OutlineDark = Color(0xFF8D9199)
 val OutlineVariantDark = Color(0xFF43474E)
 
-// Semantic colors for financial status
-val ProfitGreen = Color(0xFF2E7D32)
-val LossRed = Color(0xFFC62828)
-val DebtOrange = Color(0xFFEF6C00)
-val CreditBlue = Color(0xFF1565C0)
+// Semantic
+val ProfitGreen = Color(0xFF1F9E6B)
+val LossRed = Color(0xFFE64747)
+val DebtOrange = Color(0xFFFF8F00)
+val CreditBlue = Color(0xFF0D47A1)
+val SoftBlue = Color(0xFFE5F0FF)
+val SoftOrange = Color(0xFFFFF0E0)
+val SoftGreen = Color(0xFFE0F5EB)
+val SoftPurple = Color(0xFFEEE8FF)
+val PurpleAccent = Color(0xFF734DDA)
