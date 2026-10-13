@@ -6,7 +6,6 @@ import androidx.activity.result.ActivityResultRegistry
 import com.ostadkar.app.BuildConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
 import ir.cafebazaar.poolakey.Connection
-import ir.cafebazaar.poolakey.ConnectionCallback
 import ir.cafebazaar.poolakey.Payment
 import ir.cafebazaar.poolakey.config.PaymentConfiguration
 import ir.cafebazaar.poolakey.config.SecurityCheck
