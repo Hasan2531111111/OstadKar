@@ -35,10 +35,6 @@ import com.ostadkar.app.presentation.ui.screens.unlock.UnlockScreen
 import com.ostadkar.app.billing.BazaarBillingManager
 import com.ostadkar.app.billing.LicenseStore
 import androidx.compose.runtime.collectAsState
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.components.SingletonComponent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.remember
 import com.ostadkar.app.presentation.ui.screens.payment.PaymentsHubScreen
@@ -55,6 +51,9 @@ import com.ostadkar.app.presentation.ui.screens.settings.SettingsScreen
 import com.ostadkar.app.presentation.ui.screens.settings.ProfileScreen
 import com.ostadkar.app.presentation.ui.screens.worker.ProjectWorkersScreen
 import com.ostadkar.app.presentation.ui.screens.worker.WorkersScreen
+import com.ostadkar.app.billing.BillingEntryPoint
+import dagger.hilt.android.EntryPointAccessors
+import androidx.compose.runtime.LaunchedEffect
 import com.ostadkar.app.presentation.ui.theme.Primary
 
 private data class BottomItem(
@@ -74,18 +73,12 @@ private val bottomItems = listOf(
 @Composable
 fun OstadKarNavHost() {
     val context = LocalContext.current
-    val licenseStore = remember {
-        EntryPointAccessors.fromApplication(
-            context.applicationContext,
-            BillingEntryPoint::class.java
-        ).licenseStore()
+    val appContext = context.applicationContext
+    val entryPoint = remember(appContext) {
+        EntryPointAccessors.fromApplication(appContext, BillingEntryPoint::class.java)
     }
-    val billingManager = remember {
-        EntryPointAccessors.fromApplication(
-            context.applicationContext,
-            BillingEntryPoint::class.java
-        ).billingManager()
-    }
+    val licenseStore = remember(entryPoint) { entryPoint.licenseStore() }
+    val billingManager = remember(entryPoint) { entryPoint.billingManager() }
     val billingState by billingManager.state.collectAsState()
 
     val navController = rememberNavController()
@@ -93,13 +86,13 @@ fun OstadKarNavHost() {
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomBar = currentRoute in bottomItems.map { it.route } && billingState.isUnlocked
 
-    // Ensure we know local unlock state at start
-    androidx.compose.runtime.LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) {
         billingManager.refreshLocalLicense()
         billingManager.connect()
     }
 
     Scaffold(
+
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar {
@@ -145,6 +138,16 @@ fun OstadKarNavHost() {
             startDestination = if (licenseStore.isUnlocked()) Routes.HOME else Routes.UNLOCK,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(Routes.UNLOCK) {
+                UnlockScreen(
+                    onUnlocked = {
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.UNLOCK) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
             composable(Routes.HOME) {
                 HomeScreen(
                     onNavigateToProjects = { navController.navigate(Routes.PROJECTS) },
