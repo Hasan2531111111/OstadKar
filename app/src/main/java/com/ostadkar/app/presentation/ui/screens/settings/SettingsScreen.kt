@@ -40,7 +40,8 @@ import com.ostadkar.app.presentation.ui.theme.Primary
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    onEditProfile: () -> Unit = {}
+    onEditProfile: () -> Unit = {},
+    onRestorePurchase: () -> Unit = {}
 ) {
     Scaffold(
         topBar = { OstadTopBar(title = "تنظیمات", onBack = onBack) }
@@ -74,12 +75,32 @@ fun SettingsScreen(
                     }
                     Text("ویرایش", color = Primary, fontWeight = FontWeight.SemiBold)
                 }
+                HorizontalDivider()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onRestorePurchase() }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(Icons.Default.Info, contentDescription = null, tint = Primary)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("بازیابی خرید نسخه کامل", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            "اگر قبلاً از بازار خریده‌اید",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
 
             SectionCard(title = "درباره برنامه") {
                 SettingRow(Icons.Default.Info, "نام برنامه", "استادکار — مدیریت پروژه ساختمانی")
                 HorizontalDivider()
-                SettingRow(Icons.Default.PhoneAndroid, "نسخه", "۱.۱.۲")
+                SettingRow(Icons.Default.PhoneAndroid, "نسخه", "۱.۲.۰")
                 HorizontalDivider()
                 SettingRow(Icons.Default.Storage, "حالت کار", "کاملاً آفلاین — همه داده‌ها روی همین گوشی")
             }

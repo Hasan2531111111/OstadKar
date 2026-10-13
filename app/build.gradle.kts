@@ -14,10 +14,16 @@ android {
         applicationId = "com.ostadkar.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 8
-        versionName = "1.1.3"
+        versionCode = 9
+        versionName = "1.2.0"
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Cafe Bazaar In-App Billing (Unlock full version)
+        // شناسه محصول را در پیشخان بازار بسازید و همین را بگذارید
+        buildConfigField("String", "BAZAAR_PRODUCT_ID", "\"ostadkar_full\"")
+        // کلید RSA عمومی را از پیشخان > پرداخت درون‌برنامه‌ای کپی کنید
+        buildConfigField("String", "BAZAAR_RSA_KEY", "\"\"")
     }
 
     signingConfigs {
@@ -113,6 +119,9 @@ dependencies {
 
     // Image loading for profile photo
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // Cafe Bazaar In-App Billing
+    implementation("com.github.cafebazaar.Poolakey:poolakey:2.2.0")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
 

@@ -31,6 +31,16 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ostadkar.app.presentation.ui.screens.customer.CustomersScreen
 import com.ostadkar.app.presentation.ui.screens.home.HomeScreen
+import com.ostadkar.app.presentation.ui.screens.unlock.UnlockScreen
+import com.ostadkar.app.billing.BazaarBillingManager
+import com.ostadkar.app.billing.LicenseStore
+import androidx.compose.runtime.collectAsState
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.remember
 import com.ostadkar.app.presentation.ui.screens.payment.PaymentsHubScreen
 import com.ostadkar.app.presentation.ui.screens.payment.ProjectPaymentsScreen
 import com.ostadkar.app.presentation.ui.screens.project.AddWorkScreen
@@ -63,10 +73,31 @@ private val bottomItems = listOf(
 
 @Composable
 fun OstadKarNavHost() {
+    val context = LocalContext.current
+    val licenseStore = remember {
+        EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            BillingEntryPoint::class.java
+        ).licenseStore()
+    }
+    val billingManager = remember {
+        EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            BillingEntryPoint::class.java
+        ).billingManager()
+    }
+    val billingState by billingManager.state.collectAsState()
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val showBottomBar = currentRoute in bottomItems.map { it.route }
+    val showBottomBar = currentRoute in bottomItems.map { it.route } && billingState.isUnlocked
+
+    // Ensure we know local unlock state at start
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        billingManager.refreshLocalLicense()
+        billingManager.connect()
+    }
 
     Scaffold(
         bottomBar = {
@@ -111,7 +142,7 @@ fun OstadKarNavHost() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Routes.HOME,
+            startDestination = if (licenseStore.isUnlocked()) Routes.HOME else Routes.UNLOCK,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Routes.HOME) {
@@ -247,7 +278,8 @@ fun OstadKarNavHost() {
             composable(Routes.SETTINGS) {
                 SettingsScreen(
                     onBack = { navController.popBackStack() },
-                    onEditProfile = { navController.navigate(Routes.PROFILE) }
+                    onEditProfile = { navController.navigate(Routes.PROFILE) },
+                    onRestorePurchase = { billingManager.restorePurchases() }
                 )
             }
 

@@ -1,6 +1,7 @@
 package com.ostadkar.app.presentation.ui.navigation
 
 object Routes {
+    const val UNLOCK = "unlock"
     const val HOME = "home"
     const val PROJECTS = "projects"
     const val PROJECT_DETAIL = "project/{projectId}"
