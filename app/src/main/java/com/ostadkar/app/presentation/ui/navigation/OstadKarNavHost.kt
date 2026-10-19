@@ -84,7 +84,7 @@ fun OstadKarNavHost() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val showBottomBar = currentRoute in bottomItems.map { it.route } && billingState.isUnlocked
+    val showBottomBar = currentRoute in bottomItems.map { it.route }
 
     LaunchedEffect(Unit) {
         billingManager.refreshLocalLicense()
@@ -135,15 +135,13 @@ fun OstadKarNavHost() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = if (licenseStore.isUnlocked()) Routes.HOME else Routes.UNLOCK,
+            startDestination = Routes.HOME,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Routes.UNLOCK) {
                 UnlockScreen(
                     onUnlocked = {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.UNLOCK) { inclusive = true }
-                        }
+                        navController.popBackStack()
                     }
                 )
             }
@@ -157,7 +155,13 @@ fun OstadKarNavHost() {
                     onNavigateToReports = { navController.navigate(Routes.REPORTS) },
                     onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
                     onNavigateToProfile = { navController.navigate(Routes.PROFILE) },
-                    onNewProject = { navController.navigate(Routes.NEW_PROJECT) },
+                    onNewProject = {
+                        if (billingState.isUnlocked) {
+                            navController.navigate(Routes.NEW_PROJECT)
+                        } else {
+                            navController.navigate(Routes.UNLOCK)
+                        }
+                    },
                     onProjectClick = { id -> navController.navigate(Routes.projectDetail(id)) }
                 )
             }
@@ -166,7 +170,13 @@ fun OstadKarNavHost() {
                 ProjectsScreen(
                     onBack = { navController.popBackStack() },
                     onProjectClick = { id -> navController.navigate(Routes.projectDetail(id)) },
-                    onNewProject = { navController.navigate(Routes.NEW_PROJECT) }
+                    onNewProject = {
+                        if (billingState.isUnlocked) {
+                            navController.navigate(Routes.NEW_PROJECT)
+                        } else {
+                            navController.navigate(Routes.UNLOCK)
+                        }
+                    }
                 )
             }
 

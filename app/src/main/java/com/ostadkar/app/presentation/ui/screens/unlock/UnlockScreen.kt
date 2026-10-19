@@ -84,7 +84,7 @@ fun UnlockScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "برای استفاده از همه امکانات (پروژه، کارگران، پرداخت، گزارش و …) نسخه کامل را از طریق کافه‌بازار فعال کنید.",
+                text = "می‌توانید برنامه را ببینید. برای ثبت پروژه جدید، نسخه کامل را از کافه‌بازار فعال کنید.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.White.copy(alpha = 0.9f),
                 textAlign = TextAlign.Center
@@ -133,9 +133,18 @@ fun UnlockScreen(
                             .fillMaxWidth()
                             .height(52.dp),
                         shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Primary,
+                            contentColor = Color.White,
+                            disabledContainerColor = Primary.copy(alpha = 0.6f),
+                            disabledContentColor = Color.White
+                        )
                     ) {
-                        Text("خرید و فعال‌سازی نسخه کامل", fontWeight = FontWeight.Bold)
+                        Text(
+                            "خرید و فعال‌سازی نسخه کامل",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
 
                     OutlinedButton(

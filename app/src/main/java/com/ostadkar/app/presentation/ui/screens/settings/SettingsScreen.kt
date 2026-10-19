@@ -100,7 +100,7 @@ fun SettingsScreen(
             SectionCard(title = "درباره برنامه") {
                 SettingRow(Icons.Default.Info, "نام برنامه", "استادکار — مدیریت پروژه ساختمانی")
                 HorizontalDivider()
-                SettingRow(Icons.Default.PhoneAndroid, "نسخه", "۱.۲.۰")
+                SettingRow(Icons.Default.PhoneAndroid, "نسخه", "۱.۲.۱")
                 HorizontalDivider()
                 SettingRow(Icons.Default.Storage, "حالت کار", "کاملاً آفلاین — همه داده‌ها روی همین گوشی")
             }
