@@ -14,8 +14,8 @@ android {
         applicationId = "com.ostadkar.app"
         minSdk = 24
         targetSdk = 34
-        versionCode = 11
-        versionName = "1.2.2"
+        versionCode = 12
+        versionName = "1.2.3"
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

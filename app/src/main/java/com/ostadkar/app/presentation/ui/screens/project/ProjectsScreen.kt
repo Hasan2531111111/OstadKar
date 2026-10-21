@@ -31,6 +31,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
 import com.ostadkar.app.presentation.ui.components.StatusBadge
@@ -58,6 +62,18 @@ fun ProjectsScreen(
     viewModel: ProjectsViewModel = hiltViewModel()
 ) {
     val projects by viewModel.projects.collectAsState()
+    var pendingDelete by remember { mutableStateOf<Pair<Long, String>?>(null) }
+
+    pendingDelete?.let { (id, title) ->
+        ConfirmDeleteDialog(
+            message = "پروژه «$title» حذف شود؟",
+            onConfirm = {
+                viewModel.deleteProject(id)
+                pendingDelete = null
+            },
+            onDismiss = { pendingDelete = null }
+        )
+    }
 
     Scaffold(
         topBar = { OstadTopBar(title = "پروژه‌ها", onBack = onBack) },
@@ -131,7 +147,7 @@ fun ProjectsScreen(
                                         color = badgeColor,
                                         softColor = soft
                                     )
-                                    IconButton(onClick = { viewModel.deleteProject(project.id) }) {
+                                    IconButton(onClick = { pendingDelete = project.id to project.title.ifBlank { "پروژه بدون عنوان" } }) {
                                         Icon(
                                             Icons.Default.Delete,
                                             contentDescription = "حذف پروژه",

@@ -31,11 +31,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
 import com.ostadkar.app.presentation.viewmodel.CustomersViewModel
@@ -49,6 +53,18 @@ fun CustomersScreen(
 ) {
     val customers by viewModel.customers.collectAsState()
     val form by viewModel.form.collectAsState()
+    var pendingDelete by remember { mutableStateOf<Pair<Long, String>?>(null) }
+
+    pendingDelete?.let { (id, name) ->
+        ConfirmDeleteDialog(
+            message = "«$name» حذف شود؟",
+            onConfirm = {
+                viewModel.deleteCustomer(id)
+                pendingDelete = null
+            },
+            onDismiss = { pendingDelete = null }
+        )
+    }
 
     Scaffold(
         topBar = { OstadTopBar(title = "کارفرمایان", onBack = onBack) },
@@ -160,7 +176,7 @@ fun CustomersScreen(
                         IconButton(onClick = { viewModel.editCustomer(customer) }) {
                             Icon(Icons.Default.Edit, contentDescription = "ویرایش", tint = MaterialTheme.colorScheme.primary)
                         }
-                        IconButton(onClick = { viewModel.deleteCustomer(customer.id) }) {
+                        IconButton(onClick = { pendingDelete = customer.id to customer.name }) {
                             Icon(Icons.Default.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)
                         }
                     }

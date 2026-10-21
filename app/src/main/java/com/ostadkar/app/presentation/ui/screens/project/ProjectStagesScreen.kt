@@ -23,11 +23,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
 import com.ostadkar.app.presentation.ui.components.StageStatusLabels
@@ -41,6 +45,18 @@ fun ProjectStagesScreen(
     viewModel: ProjectStagesViewModel = hiltViewModel()
 ) {
     val stages by viewModel.stages.collectAsState()
+    var pendingDelete by remember { mutableStateOf<Pair<Long, String>?>(null) }
+
+    pendingDelete?.let { (id, name) ->
+        ConfirmDeleteDialog(
+            message = "مرحله «$name» حذف شود؟",
+            onConfirm = {
+                viewModel.deleteStage(id)
+                pendingDelete = null
+            },
+            onDismiss = { pendingDelete = null }
+        )
+    }
 
     Scaffold(
         topBar = { OstadTopBar(title = "مراحل انجام کار", onBack = onBack) }
@@ -96,7 +112,7 @@ fun ProjectStagesScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = statusColor
                             )
-                            IconButton(onClick = { viewModel.deleteStage(stage.id) }) {
+                            IconButton(onClick = { pendingDelete = stage.id to stage.name }) {
                                 Icon(
                                     Icons.Default.Delete,
                                     contentDescription = "حذف",

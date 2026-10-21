@@ -39,6 +39,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ostadkar.app.domain.model.ProjectWorker
 import com.ostadkar.app.presentation.ui.components.DailyWorkTypeLabels
 import com.ostadkar.app.presentation.ui.components.AmountTextField
+import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import com.ostadkar.app.presentation.ui.components.PersianDateFormatter
@@ -68,6 +72,29 @@ fun ProjectWorkersScreen(
     val workers by viewModel.assignedWorkers.collectAsState()
     val dailyWorks by viewModel.dailyWorks.collectAsState()
     val payments by viewModel.workerPayments.collectAsState()
+    var pendingDeletePayment by remember { mutableStateOf<Pair<Long, String>?>(null) }
+    var pendingRemoveWorker by remember { mutableStateOf<Pair<Long, String>?>(null) }
+
+    pendingDeletePayment?.let { (id, label) ->
+        ConfirmDeleteDialog(
+            message = "پرداخت $label حذف شود؟",
+            onConfirm = {
+                viewModel.deleteWorkerPayment(id)
+                pendingDeletePayment = null
+            },
+            onDismiss = { pendingDeletePayment = null }
+        )
+    }
+    pendingRemoveWorker?.let { (workerId, name) ->
+        ConfirmDeleteDialog(
+            message = "«$name» از این پروژه حذف شود؟",
+            onConfirm = {
+                viewModel.removeWorker(workerId)
+                pendingRemoveWorker = null
+            },
+            onDismiss = { pendingRemoveWorker = null }
+        )
+    }
     val addForm by viewModel.addForm.collectAsState()
     val dailyForm by viewModel.dailyForm.collectAsState()
     val payForm by viewModel.payForm.collectAsState()
@@ -151,7 +178,7 @@ fun ProjectWorkersScreen(
                     worker = worker,
                     onDailyWork = { viewModel.showDailyForm(worker) },
                     onPay = { viewModel.showPayForm(worker) },
-                    onRemove = { viewModel.removeWorker(worker.workerId) }
+                    onRemove = { pendingRemoveWorker = worker.workerId to worker.workerName }
                 )
             }
 
@@ -229,7 +256,7 @@ fun ProjectWorkersScreen(
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
-                            IconButton(onClick = { viewModel.deleteWorkerPayment(p.id) }) {
+                            IconButton(onClick = { pendingDeletePayment = p.id to MoneyFormatter.format(p.amount) }) {
                                 Icon(Icons.Default.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)
                             }
                         }

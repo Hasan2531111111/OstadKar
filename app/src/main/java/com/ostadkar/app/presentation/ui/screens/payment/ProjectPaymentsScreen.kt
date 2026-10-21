@@ -35,12 +35,16 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ostadkar.app.presentation.ui.components.AmountTextField
+import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
@@ -63,6 +67,18 @@ fun ProjectPaymentsScreen(
     val received by viewModel.receivedTotal.collectAsState()
     val workTotal by viewModel.workTotal.collectAsState()
     val form by viewModel.form.collectAsState()
+    var pendingDelete by remember { mutableStateOf<Pair<Long, String>?>(null) }
+
+    pendingDelete?.let { (id, label) ->
+        ConfirmDeleteDialog(
+            message = "این پرداخت ($label) حذف شود؟",
+            onConfirm = {
+                viewModel.deletePayment(id)
+                pendingDelete = null
+            },
+            onDismiss = { pendingDelete = null }
+        )
+    }
     val remaining = workTotal - received
 
     Scaffold(
@@ -239,7 +255,7 @@ fun ProjectPaymentsScreen(
                                 IconButton(onClick = { viewModel.editPayment(payment) }) {
                                     Icon(Icons.Default.Edit, contentDescription = "ویرایش", tint = MaterialTheme.colorScheme.primary)
                                 }
-                                IconButton(onClick = { viewModel.deletePayment(payment.id) }) {
+                                IconButton(onClick = { pendingDelete = payment.id to MoneyFormatter.format(payment.amount) }) {
                                     Icon(Icons.Default.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)
                                 }
                             }

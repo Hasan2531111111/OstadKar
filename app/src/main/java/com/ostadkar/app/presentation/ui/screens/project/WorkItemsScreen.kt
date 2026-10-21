@@ -27,11 +27,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
@@ -46,6 +50,18 @@ fun WorkItemsScreen(
     viewModel: WorkItemsViewModel = hiltViewModel()
 ) {
     val items by viewModel.workItems.collectAsState()
+    var pendingDelete by remember { mutableStateOf<Pair<Long, String>?>(null) }
+
+    pendingDelete?.let { (id, label) ->
+        ConfirmDeleteDialog(
+            message = "آیتم «$label» حذف شود؟",
+            onConfirm = {
+                viewModel.deleteItem(id)
+                pendingDelete = null
+            },
+            onDismiss = { pendingDelete = null }
+        )
+    }
     val total by viewModel.total.collectAsState()
 
     Scaffold(
@@ -134,7 +150,7 @@ fun WorkItemsScreen(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                             }
-                            IconButton(onClick = { viewModel.deleteItem(item.id) }) {
+                            IconButton(onClick = { pendingDelete = item.id to "${item.workTypeName} — ${item.workLocationName}" }) {
                                 Icon(
                                     Icons.Default.Delete,
                                     contentDescription = "حذف",
