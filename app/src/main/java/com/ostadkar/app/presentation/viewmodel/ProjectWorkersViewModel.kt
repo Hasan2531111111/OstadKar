@@ -250,12 +250,6 @@ class ProjectWorkersViewModel @Inject constructor(
             _payForm.value = WorkerPayForm(show = false)
         }
     }
-}
-
-private fun String.filterDigits(): String {
-    return filter { it.isDigit() || it == '.' || it == '٫' }
-        .replace('٫', '.')
-
 
     fun deleteWorkerPayment(id: Long) {
         viewModelScope.launch {
@@ -267,5 +261,10 @@ private fun String.filterDigits(): String {
         viewModelScope.launch {
             dailyWorkRepository.delete(id)
         }
+    }
+
+    private fun String.filterDigits(): String {
+        return filter { it.isDigit() || it == '.' || it == '٫' }
+            .replace('٫', '.')
     }
 }
