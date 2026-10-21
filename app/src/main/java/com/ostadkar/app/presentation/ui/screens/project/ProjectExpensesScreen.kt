@@ -110,11 +110,6 @@ fun ProjectExpensesScreen(
                             AmountTextField(
                                 value = form.amount,
                                 onValueChange = viewModel::updateAmount
-                            ) *") },
-                                modifier = Modifier.fillMaxWidth(),
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                shape = RoundedCornerShape(12.dp)
                             )
                             Text("دسته", style = MaterialTheme.typography.labelLarge)
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
