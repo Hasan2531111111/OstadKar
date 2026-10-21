@@ -27,7 +27,7 @@ class ProjectExpenseRepositoryImpl @Inject constructor(
     override suspend fun save(expense: ProjectExpense): Long = dao.insert(expense.toEntity())
 
     override suspend fun delete(id: Long) {
-        // via entity later
+        dao.deleteById(id)
     }
 }
 
@@ -39,6 +39,10 @@ class ProjectStageRepositoryImpl @Inject constructor(
         dao.observeByProject(projectId).map { list -> list.map { it.toDomain() } }
 
     override suspend fun save(stage: ProjectStage): Long = dao.insert(stage.toEntity())
+
+    override suspend fun delete(id: Long) {
+        dao.deleteById(id)
+    }
 
     override suspend fun seedDefaultStages(projectId: Long) {
         val defaults = listOf(

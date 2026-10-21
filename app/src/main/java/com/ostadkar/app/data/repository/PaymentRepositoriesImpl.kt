@@ -26,7 +26,7 @@ class CustomerPaymentRepositoryImpl @Inject constructor(
     override suspend fun save(payment: CustomerPayment): Long = dao.insert(payment.toEntity())
 
     override suspend fun delete(id: Long) {
-        // Implement if needed via query
+        dao.deleteById(id)
     }
 }
 
@@ -46,6 +46,6 @@ class WorkerPaymentRepositoryImpl @Inject constructor(
     override suspend fun save(payment: WorkerPayment): Long = dao.insert(payment.toEntity())
 
     override suspend fun delete(id: Long) {
-        // Implement if needed
+        dao.deleteById(id)
     }
 }

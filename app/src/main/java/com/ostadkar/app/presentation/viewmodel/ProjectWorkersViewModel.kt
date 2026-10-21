@@ -7,6 +7,7 @@ import com.ostadkar.app.domain.model.DailyWork
 import com.ostadkar.app.domain.model.ProjectWorker
 import com.ostadkar.app.domain.model.Worker
 import com.ostadkar.app.domain.model.WorkerPayment
+import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import com.ostadkar.app.domain.repository.DailyWorkRepository
 import com.ostadkar.app.domain.repository.ProjectWorkerRepository
 import com.ostadkar.app.domain.repository.WorkerPaymentRepository
@@ -221,14 +222,14 @@ class ProjectWorkersViewModel @Inject constructor(
         _payForm.value = WorkerPayForm(show = false)
     }
 
-    fun updatePayAmount(v: String) { _payForm.value = _payForm.value.copy(amount = v.filter { it.isDigit() }, error = null) }
+    fun updatePayAmount(v: String) { _payForm.value = _payForm.value.copy(amount = MoneyFormatter.formatAmountInput(v), error = null) }
     fun updatePayType(v: String) { _payForm.value = _payForm.value.copy(paymentType = v) }
     fun updatePayMethod(v: String) { _payForm.value = _payForm.value.copy(method = v) }
     fun updatePayNotes(v: String) { _payForm.value = _payForm.value.copy(notes = v) }
 
     fun saveWorkerPayment() {
         val f = _payForm.value
-        val amount = f.amount.toLongOrNull() ?: 0L
+        val amount = MoneyFormatter.parseAmount(f.amount)
         if (amount <= 0) {
             _payForm.value = f.copy(error = "مبلغ را وارد کنید")
             return
@@ -254,4 +255,17 @@ class ProjectWorkersViewModel @Inject constructor(
 private fun String.filterDigits(): String {
     return filter { it.isDigit() || it == '.' || it == '٫' }
         .replace('٫', '.')
+
+
+    fun deleteWorkerPayment(id: Long) {
+        viewModelScope.launch {
+            workerPaymentRepository.delete(id)
+        }
+    }
+
+    fun deleteDailyWork(id: Long) {
+        viewModelScope.launch {
+            dailyWorkRepository.delete(id)
+        }
+    }
 }

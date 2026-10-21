@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,6 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -37,6 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ostadkar.app.presentation.ui.components.AmountTextField
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
@@ -94,7 +98,7 @@ fun ProjectExpensesScreen(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Text("ثبت هزینه", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                            Text(if (form.editingId != null) "ویرایش هزینه" else "ثبت هزینه", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                             OutlinedTextField(
                                 value = form.title,
                                 onValueChange = viewModel::updateTitle,
@@ -103,10 +107,10 @@ fun ProjectExpensesScreen(
                                 singleLine = true,
                                 shape = RoundedCornerShape(12.dp)
                             )
-                            OutlinedTextField(
+                            AmountTextField(
                                 value = form.amount,
-                                onValueChange = viewModel::updateAmount,
-                                label = { Text("مبلغ (تومان) *") },
+                                onValueChange = viewModel::updateAmount
+                            ) *") },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -160,19 +164,35 @@ fun ProjectExpensesScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(expense.title, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            MoneyFormatter.format(expense.amount),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = DebtOrange
-                        )
-                        val cat = when (expense.category) {
-                            "materials" -> "مصالح"
-                            "transport" -> "حمل‌ونقل"
-                            else -> "سایر"
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(expense.title, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                MoneyFormatter.format(expense.amount),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = DebtOrange
+                            )
+                            val cat = when (expense.category) {
+                                "materials" -> "مصالح"
+                                "transport" -> "حمل‌ونقل"
+                                else -> "سایر"
+                            }
+                            Text(cat, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            if (expense.notes.isNotBlank()) {
+                                Text(expense.notes, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
-                        Text(cat, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row {
+                            IconButton(onClick = { viewModel.editExpense(expense) }) {
+                                Icon(Icons.Default.Edit, contentDescription = "ویرایش", tint = MaterialTheme.colorScheme.primary)
+                            }
+                            IconButton(onClick = { viewModel.deleteExpense(expense.id) }) {
+                                Icon(Icons.Default.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)
+                            }
+                        }
                     }
                 }
             }

@@ -39,4 +39,10 @@ class ProjectStagesViewModel @Inject constructor(
             )
         }
     }
+
+    fun deleteStage(id: Long) {
+        viewModelScope.launch {
+            stageRepository.delete(id)
+        }
+    }
 }

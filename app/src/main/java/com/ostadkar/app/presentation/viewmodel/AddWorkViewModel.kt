@@ -1,5 +1,7 @@
 package com.ostadkar.app.presentation.viewmodel
 
+import com.ostadkar.app.presentation.ui.components.MoneyFormatter
+
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -145,7 +147,7 @@ class AddWorkViewModel @Inject constructor(
     }
 
     fun updateUnitPrice(v: String) {
-        _uiState.value = _uiState.value.copy(unitPrice = v.filterDigitsInt())
+        _uiState.value = _uiState.value.copy(unitPrice = MoneyFormatter.formatAmountInput(v))
     }
 
     fun updateNotes(v: String) {
@@ -212,7 +214,7 @@ class AddWorkViewModel @Inject constructor(
                 _uiState.value = s.copy(error = "مقدار/متراژ باید بیشتر از صفر باشد")
                 return@launch
             }
-            val unitPrice = s.unitPrice.toLongOrNull() ?: 0L
+            val unitPrice = MoneyFormatter.parseAmount(s.unitPrice)
             if (unitPrice <= 0) {
                 _uiState.value = s.copy(error = "قیمت واحد را وارد کنید")
                 return@launch

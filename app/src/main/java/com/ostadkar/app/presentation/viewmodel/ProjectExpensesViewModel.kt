@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ostadkar.app.domain.model.ProjectExpense
 import com.ostadkar.app.domain.repository.ProjectExpenseRepository
+import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,10 +17,12 @@ import javax.inject.Inject
 
 data class ExpenseFormState(
     val show: Boolean = false,
+    val editingId: Long? = null,
     val title: String = "",
     val amount: String = "",
     val category: String = "materials",
     val notes: String = "",
+    val expenseDate: Long = System.currentTimeMillis(),
     val isSaving: Boolean = false,
     val error: String? = null
 )
@@ -45,8 +48,21 @@ class ProjectExpensesViewModel @Inject constructor(
 
     fun showForm() { _form.value = ExpenseFormState(show = true) }
     fun hideForm() { _form.value = ExpenseFormState(show = false) }
+
+    fun editExpense(expense: ProjectExpense) {
+        _form.value = ExpenseFormState(
+            show = true,
+            editingId = expense.id,
+            title = expense.title,
+            amount = MoneyFormatter.formatAmountInput(expense.amount.toString()),
+            category = expense.category,
+            notes = expense.notes,
+            expenseDate = expense.expenseDate
+        )
+    }
+
     fun updateTitle(v: String) { _form.value = _form.value.copy(title = v, error = null) }
-    fun updateAmount(v: String) { _form.value = _form.value.copy(amount = v.filter { it.isDigit() }) }
+    fun updateAmount(v: String) { _form.value = _form.value.copy(amount = MoneyFormatter.formatAmountInput(v)) }
     fun updateCategory(v: String) { _form.value = _form.value.copy(category = v) }
     fun updateNotes(v: String) { _form.value = _form.value.copy(notes = v) }
 
@@ -56,7 +72,7 @@ class ProjectExpensesViewModel @Inject constructor(
             _form.value = f.copy(error = "عنوان هزینه الزامی است")
             return
         }
-        val amount = f.amount.toLongOrNull() ?: 0L
+        val amount = MoneyFormatter.parseAmount(f.amount)
         if (amount <= 0) {
             _form.value = f.copy(error = "مبلغ را وارد کنید")
             return
@@ -65,15 +81,23 @@ class ProjectExpensesViewModel @Inject constructor(
             _form.value = f.copy(isSaving = true)
             expenseRepository.save(
                 ProjectExpense(
+                    id = f.editingId ?: 0L,
                     projectId = projectId,
                     category = f.category,
                     title = f.title.trim(),
                     amount = amount,
-                    expenseDate = System.currentTimeMillis(),
+                    expenseDate = f.expenseDate,
                     notes = f.notes.trim()
                 )
             )
             _form.value = ExpenseFormState(show = false)
+        }
+    }
+
+    fun deleteExpense(id: Long) {
+        viewModelScope.launch {
+            expenseRepository.delete(id)
+            if (_form.value.editingId == id) hideForm()
         }
     }
 }

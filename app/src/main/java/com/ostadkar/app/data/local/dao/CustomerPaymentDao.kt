@@ -26,6 +26,9 @@ interface CustomerPaymentDao {
     @Update
     suspend fun update(payment: CustomerPaymentEntity)
 
+    @Query("DELETE FROM customer_payments WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Delete
     suspend fun delete(payment: CustomerPaymentEntity)
 }

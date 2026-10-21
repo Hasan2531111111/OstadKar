@@ -32,6 +32,9 @@ interface WorkerPaymentDao {
     @Update
     suspend fun update(payment: WorkerPaymentEntity)
 
+    @Query("DELETE FROM worker_payments WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Delete
     suspend fun delete(payment: WorkerPaymentEntity)
 }

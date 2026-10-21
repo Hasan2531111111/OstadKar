@@ -93,6 +93,7 @@ interface ProjectExpenseRepository {
 interface ProjectStageRepository {
     fun observeByProject(projectId: Long): Flow<List<ProjectStage>>
     suspend fun save(stage: ProjectStage): Long
+    suspend fun delete(id: Long)
     suspend fun seedDefaultStages(projectId: Long)
 }
 

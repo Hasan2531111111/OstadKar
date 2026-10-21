@@ -23,6 +23,9 @@ interface ProjectStageDao {
     @Update
     suspend fun update(stage: ProjectStageEntity)
 
+    @Query("DELETE FROM project_stages WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Delete
     suspend fun delete(stage: ProjectStageEntity)
 }

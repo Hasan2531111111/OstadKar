@@ -6,12 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.ostadkar.app.domain.model.CustomerPayment
 import com.ostadkar.app.domain.repository.CustomerPaymentRepository
 import com.ostadkar.app.domain.repository.WorkItemRepository
+import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,7 +22,9 @@ data class PaymentFormState(
     val notes: String = "",
     val isSaving: Boolean = false,
     val error: String? = null,
-    val showForm: Boolean = false
+    val showForm: Boolean = false,
+    val editingId: Long? = null,
+    val paymentDate: Long = System.currentTimeMillis()
 )
 
 @HiltViewModel
@@ -53,12 +55,23 @@ class ProjectPaymentsViewModel @Inject constructor(
         _form.value = PaymentFormState(showForm = true)
     }
 
+    fun editPayment(payment: CustomerPayment) {
+        _form.value = PaymentFormState(
+            showForm = true,
+            editingId = payment.id,
+            amount = MoneyFormatter.formatAmountInput(payment.amount.toString()),
+            method = payment.method,
+            notes = payment.notes,
+            paymentDate = payment.paymentDate
+        )
+    }
+
     fun hideForm() {
         _form.value = PaymentFormState(showForm = false)
     }
 
     fun updateAmount(v: String) {
-        _form.value = _form.value.copy(amount = v.filter { it.isDigit() }, error = null)
+        _form.value = _form.value.copy(amount = MoneyFormatter.formatAmountInput(v), error = null)
     }
 
     fun updateMethod(method: String) {
@@ -71,7 +84,7 @@ class ProjectPaymentsViewModel @Inject constructor(
 
     fun savePayment() {
         val f = _form.value
-        val amount = f.amount.toLongOrNull() ?: 0L
+        val amount = MoneyFormatter.parseAmount(f.amount)
         if (amount <= 0) {
             _form.value = f.copy(error = "مبلغ را وارد کنید")
             return
@@ -80,14 +93,22 @@ class ProjectPaymentsViewModel @Inject constructor(
             _form.value = f.copy(isSaving = true, error = null)
             paymentRepository.save(
                 CustomerPayment(
+                    id = f.editingId ?: 0L,
                     projectId = projectId,
                     amount = amount,
-                    paymentDate = System.currentTimeMillis(),
+                    paymentDate = f.paymentDate,
                     method = f.method,
                     notes = f.notes.trim()
                 )
             )
             _form.value = PaymentFormState(showForm = false)
+        }
+    }
+
+    fun deletePayment(id: Long) {
+        viewModelScope.launch {
+            paymentRepository.delete(id)
+            if (_form.value.editingId == id) hideForm()
         }
     }
 }

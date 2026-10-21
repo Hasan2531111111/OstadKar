@@ -23,6 +23,9 @@ interface ProjectExpenseDao {
     @Update
     suspend fun update(expense: ProjectExpenseEntity)
 
+    @Query("DELETE FROM project_expenses WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Delete
     suspend fun delete(expense: ProjectExpenseEntity)
 }

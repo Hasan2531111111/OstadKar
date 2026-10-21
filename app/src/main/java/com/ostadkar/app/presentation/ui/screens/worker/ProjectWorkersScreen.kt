@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ostadkar.app.domain.model.ProjectWorker
 import com.ostadkar.app.presentation.ui.components.DailyWorkTypeLabels
+import com.ostadkar.app.presentation.ui.components.AmountTextField
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import com.ostadkar.app.presentation.ui.components.PersianDateFormatter
@@ -211,18 +212,26 @@ fun ProjectWorkersScreen(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(name, fontWeight = FontWeight.SemiBold)
-                            Text(
-                                PersianDateFormatter.formatFull(p.paymentDate),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text(
-                                "${MoneyFormatter.format(p.amount)} — ${PaymentMethodLabels.label(p.method)}",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(name, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    PersianDateFormatter.formatFull(p.paymentDate),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    "${MoneyFormatter.format(p.amount)} — ${PaymentMethodLabels.label(p.method)}",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                            IconButton(onClick = { viewModel.deleteWorkerPayment(p.id) }) {
+                                Icon(Icons.Default.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)
+                            }
                         }
                     }
                 }
@@ -520,14 +529,9 @@ private fun WorkerPayFormCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            OutlinedTextField(
+            AmountTextField(
                 value = form.amount,
-                onValueChange = onAmount,
-                label = { Text("مبلغ (تومان) *") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                shape = RoundedCornerShape(12.dp)
+                onValueChange = onAmount
             )
             Text("نوع پرداخت", style = MaterialTheme.typography.labelLarge)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

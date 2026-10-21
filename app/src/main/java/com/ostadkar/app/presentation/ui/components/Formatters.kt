@@ -22,6 +22,34 @@ object MoneyFormatter {
         return formatter.format(amount)
     }
 
+    /** Extract plain western digits from mixed Persian/Arabic/Latin input */
+    fun digitsOnly(input: String): String {
+        return buildString {
+            input.forEach { c ->
+                when (c) {
+                    in '0'..'9' -> append(c)
+                    in '۰'..'۹' -> append('0' + (c - '۰'))
+                    in '٠'..'٩' -> append('0' + (c - '٠'))
+                }
+            }
+        }
+    }
+
+    fun parseAmount(input: String): Long = digitsOnly(input).toLongOrNull() ?: 0L
+
+    /**
+     * Format while typing: "1500000" -> "۱٬۵۰۰٬۰۰۰"
+     * Keeps only digits then applies thousand separators + Persian digits.
+     */
+    fun formatAmountInput(input: String): String {
+        val digits = digitsOnly(input)
+        if (digits.isEmpty()) return ""
+        // avoid leading zeros unless single zero
+        val normalized = digits.trimStart('0').ifEmpty { "0" }
+        val value = normalized.toLongOrNull() ?: return toPersianDigits(digits)
+        return toPersianDigits(formatter.format(value).replace(',', '٬'))
+    }
+
     /** Convert Western digits to Persian digits */
     fun toPersianDigits(input: String): String {
         val persian = charArrayOf('۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹')
