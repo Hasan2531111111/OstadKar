@@ -19,6 +19,10 @@ interface ProjectWorkerDao {
     @Query("SELECT * FROM project_workers WHERE projectId = :projectId AND workerId = :workerId LIMIT 1")
     suspend fun getAssignment(projectId: Long, workerId: Long): ProjectWorkerEntity?
 
+    
+    @Query("SELECT * FROM project_workers ORDER BY id ASC")
+    suspend fun getAll(): List<ProjectWorkerEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(assignment: ProjectWorkerEntity): Long
 

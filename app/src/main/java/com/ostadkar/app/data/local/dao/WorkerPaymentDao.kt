@@ -26,6 +26,10 @@ interface WorkerPaymentDao {
     @Query("SELECT COALESCE(SUM(amount), 0) FROM worker_payments")
     fun observeAllTotal(): Flow<Long>
 
+    
+    @Query("SELECT * FROM worker_payments ORDER BY paymentDate DESC")
+    suspend fun getAll(): List<WorkerPaymentEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(payment: WorkerPaymentEntity): Long
 

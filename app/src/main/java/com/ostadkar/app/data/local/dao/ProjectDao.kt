@@ -29,6 +29,10 @@ interface ProjectDao {
     @Query("SELECT COUNT(*) FROM projects WHERE status = 'active'")
     fun observeActiveCount(): Flow<Int>
 
+    
+    @Query("SELECT * FROM projects ORDER BY createdAt DESC")
+    suspend fun getAll(): List<ProjectEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(project: ProjectEntity): Long
 

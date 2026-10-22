@@ -17,6 +17,10 @@ interface ProjectExpenseDao {
     @Query("SELECT COALESCE(SUM(amount), 0) FROM project_expenses WHERE projectId = :projectId")
     fun observeProjectTotal(projectId: Long): Flow<Long>
 
+    
+    @Query("SELECT * FROM project_expenses ORDER BY expenseDate DESC")
+    suspend fun getAll(): List<ProjectExpenseEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(expense: ProjectExpenseEntity): Long
 

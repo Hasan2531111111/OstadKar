@@ -23,6 +23,10 @@ interface CustomerDao {
     @Query("SELECT * FROM customers WHERE name LIKE '%' || :query || '%' OR mobile LIKE '%' || :query || '%' ORDER BY name ASC")
     fun search(query: String): Flow<List<CustomerEntity>>
 
+    
+    @Query("SELECT * FROM customers ORDER BY name ASC")
+    suspend fun getAll(): List<CustomerEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(customer: CustomerEntity): Long
 

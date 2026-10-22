@@ -26,6 +26,10 @@ interface DailyWorkDao {
     @Query("SELECT COALESCE(SUM(baseWage), 0) FROM daily_works WHERE projectId = :projectId AND workerId = :workerId")
     fun observeWorkerBaseWage(projectId: Long, workerId: Long): Flow<Long>
 
+    
+    @Query("SELECT * FROM daily_works ORDER BY workDate DESC")
+    suspend fun getAll(): List<DailyWorkEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(dailyWork: DailyWorkEntity): Long
 

@@ -26,6 +26,10 @@ interface WorkerDao {
     @Query("SELECT * FROM workers WHERE type = :type AND isActive = 1 ORDER BY name ASC")
     fun observeByType(type: String): Flow<List<WorkerEntity>>
 
+    
+    @Query("SELECT * FROM workers ORDER BY name ASC")
+    suspend fun getAll(): List<WorkerEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(worker: WorkerEntity): Long
 

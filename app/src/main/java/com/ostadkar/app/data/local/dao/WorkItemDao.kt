@@ -26,6 +26,10 @@ interface WorkItemDao {
     @Query("SELECT COALESCE(SUM(totalPrice), 0) FROM work_items")
     fun observeAllProjectsTotal(): Flow<Long>
 
+    
+    @Query("SELECT * FROM work_items ORDER BY id ASC")
+    suspend fun getAll(): List<WorkItemEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: WorkItemEntity): Long
 
