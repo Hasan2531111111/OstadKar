@@ -18,6 +18,9 @@ interface ProjectExpenseDao {
     fun observeProjectTotal(projectId: Long): Flow<Long>
 
     
+    @Query("SELECT * FROM project_expenses WHERE id = :id")
+    suspend fun getById(id: Long): ProjectExpenseEntity?
+
     @Query("SELECT * FROM project_expenses ORDER BY expenseDate DESC")
     suspend fun getAll(): List<ProjectExpenseEntity>
 

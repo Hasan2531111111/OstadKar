@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -44,23 +45,30 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ostadkar.app.presentation.ui.components.AmountTextField
+import com.ostadkar.app.presentation.ui.components.BackupShareEffect
 import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
 import com.ostadkar.app.presentation.ui.components.SummaryCard
 import com.ostadkar.app.presentation.ui.theme.DebtOrange
+import com.ostadkar.app.data.backup.BackupItem
+import com.ostadkar.app.presentation.viewmodel.BackupViewModel
 import com.ostadkar.app.presentation.viewmodel.ProjectExpensesViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ProjectExpensesScreen(
     onBack: () -> Unit,
-    viewModel: ProjectExpensesViewModel = hiltViewModel()
+    viewModel: ProjectExpensesViewModel = hiltViewModel(),
+    backupViewModel: BackupViewModel = hiltViewModel()
 ) {
     val expenses by viewModel.expenses.collectAsState()
     val total by viewModel.total.collectAsState()
     val form by viewModel.form.collectAsState()
+    val backupState by backupViewModel.state.collectAsState()
+    BackupShareEffect(backupState, backupViewModel)
+
     var pendingDelete by remember { mutableStateOf<Pair<Long, String>?>(null) }
 
     pendingDelete?.let { (id, title) ->
@@ -199,6 +207,15 @@ fun ProjectExpensesScreen(
                         Row {
                             IconButton(onClick = { viewModel.editExpense(expense) }) {
                                 Icon(Icons.Default.Edit, contentDescription = "ویرایش", tint = MaterialTheme.colorScheme.primary)
+                            }
+                            IconButton(onClick = {
+                                backupViewModel.exportItem(
+                                    BackupItem.EXPENSE,
+                                    expense.id,
+                                    expense.title
+                                )
+                            }) {
+                                Icon(Icons.Default.Share, contentDescription = "پشتیبان", tint = MaterialTheme.colorScheme.primary)
                             }
                             IconButton(onClick = { pendingDelete = expense.id to expense.title }) {
                                 Icon(Icons.Default.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)

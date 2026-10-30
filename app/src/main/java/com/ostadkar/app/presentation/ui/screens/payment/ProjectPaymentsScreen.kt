@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
@@ -44,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ostadkar.app.presentation.ui.components.AmountTextField
+import com.ostadkar.app.presentation.ui.components.BackupShareEffect
 import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.MoneyFormatter
@@ -52,6 +54,8 @@ import com.ostadkar.app.presentation.ui.components.PaymentMethodLabels
 import com.ostadkar.app.presentation.ui.components.SummaryCard
 import com.ostadkar.app.presentation.ui.theme.CreditBlue
 import com.ostadkar.app.presentation.ui.theme.ProfitGreen
+import com.ostadkar.app.data.backup.BackupItem
+import com.ostadkar.app.presentation.viewmodel.BackupViewModel
 import com.ostadkar.app.presentation.viewmodel.ProjectPaymentsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -61,12 +65,16 @@ import java.util.Locale
 @Composable
 fun ProjectPaymentsScreen(
     onBack: () -> Unit,
-    viewModel: ProjectPaymentsViewModel = hiltViewModel()
+    viewModel: ProjectPaymentsViewModel = hiltViewModel(),
+    backupViewModel: BackupViewModel = hiltViewModel()
 ) {
     val payments by viewModel.payments.collectAsState()
     val received by viewModel.receivedTotal.collectAsState()
     val workTotal by viewModel.workTotal.collectAsState()
     val form by viewModel.form.collectAsState()
+    val backupState by backupViewModel.state.collectAsState()
+    BackupShareEffect(backupState, backupViewModel)
+
     var pendingDelete by remember { mutableStateOf<Pair<Long, String>?>(null) }
 
     pendingDelete?.let { (id, label) ->
@@ -255,7 +263,16 @@ fun ProjectPaymentsScreen(
                                 IconButton(onClick = { viewModel.editPayment(payment) }) {
                                     Icon(Icons.Default.Edit, contentDescription = "ویرایش", tint = MaterialTheme.colorScheme.primary)
                                 }
-                                IconButton(onClick = { pendingDelete = payment.id to MoneyFormatter.format(payment.amount) }) {
+                                IconButton(onClick = {
+                                backupViewModel.exportItem(
+                                    BackupItem.CUSTOMER_PAYMENT,
+                                    payment.id,
+                                    MoneyFormatter.format(payment.amount)
+                                )
+                            }) {
+                                Icon(Icons.Default.Share, contentDescription = "پشتیبان", tint = MaterialTheme.colorScheme.primary)
+                            }
+                            IconButton(onClick = { pendingDelete = payment.id to MoneyFormatter.format(payment.amount) }) {
                                     Icon(Icons.Default.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)
                                 }
                             }

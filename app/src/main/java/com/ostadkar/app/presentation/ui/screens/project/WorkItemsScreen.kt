@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,11 +36,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ostadkar.app.presentation.ui.components.BackupShareEffect
 import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
 import com.ostadkar.app.presentation.ui.components.UnitLabels
+import com.ostadkar.app.data.backup.BackupItem
+import com.ostadkar.app.presentation.viewmodel.BackupViewModel
 import com.ostadkar.app.presentation.viewmodel.WorkItemsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,9 +51,13 @@ import com.ostadkar.app.presentation.viewmodel.WorkItemsViewModel
 fun WorkItemsScreen(
     onBack: () -> Unit,
     onAddWork: () -> Unit,
-    viewModel: WorkItemsViewModel = hiltViewModel()
+    viewModel: WorkItemsViewModel = hiltViewModel(),
+    backupViewModel: BackupViewModel = hiltViewModel()
 ) {
     val items by viewModel.workItems.collectAsState()
+    val backupState by backupViewModel.state.collectAsState()
+    BackupShareEffect(backupState, backupViewModel)
+
     var pendingDelete by remember { mutableStateOf<Pair<Long, String>?>(null) }
 
     pendingDelete?.let { (id, label) ->
@@ -149,6 +157,15 @@ fun WorkItemsScreen(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
+                            }
+                            IconButton(onClick = {
+                                backupViewModel.exportItem(
+                                    BackupItem.WORK_ITEM,
+                                    item.id,
+                                    "${item.workTypeName}"
+                                )
+                            }) {
+                                Icon(Icons.Default.Share, contentDescription = "پشتیبان", tint = MaterialTheme.colorScheme.primary)
                             }
                             IconButton(onClick = { pendingDelete = item.id to "${item.workTypeName} — ${item.workLocationName}" }) {
                                 Icon(

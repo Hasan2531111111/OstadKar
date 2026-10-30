@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -41,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ostadkar.app.presentation.ui.components.BackupShareEffect
 import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
@@ -51,6 +53,8 @@ import com.ostadkar.app.presentation.ui.theme.Primary
 import com.ostadkar.app.presentation.ui.theme.ProfitGreen
 import com.ostadkar.app.presentation.ui.theme.SoftBlue
 import com.ostadkar.app.presentation.ui.theme.SoftGreen
+import com.ostadkar.app.data.backup.BackupItem
+import com.ostadkar.app.presentation.viewmodel.BackupViewModel
 import com.ostadkar.app.presentation.viewmodel.ProjectsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,9 +63,13 @@ fun ProjectsScreen(
     onBack: () -> Unit,
     onProjectClick: (Long) -> Unit,
     onNewProject: () -> Unit,
-    viewModel: ProjectsViewModel = hiltViewModel()
+    viewModel: ProjectsViewModel = hiltViewModel(),
+    backupViewModel: BackupViewModel = hiltViewModel()
 ) {
     val projects by viewModel.projects.collectAsState()
+    val backupState by backupViewModel.state.collectAsState()
+    BackupShareEffect(backupState, backupViewModel)
+
     var pendingDelete by remember { mutableStateOf<Pair<Long, String>?>(null) }
 
     pendingDelete?.let { (id, title) ->
@@ -147,7 +155,16 @@ fun ProjectsScreen(
                                         color = badgeColor,
                                         softColor = soft
                                     )
-                                    IconButton(onClick = { pendingDelete = project.id to project.title.ifBlank { "پروژه بدون عنوان" } }) {
+                                    IconButton(onClick = {
+                                backupViewModel.exportItem(
+                                    BackupItem.PROJECT,
+                                    project.id,
+                                    project.title.ifBlank { "پروژه" }
+                                )
+                            }) {
+                                Icon(Icons.Default.Share, contentDescription = "پشتیبان", tint = MaterialTheme.colorScheme.primary)
+                            }
+                            IconButton(onClick = { pendingDelete = project.id to project.title.ifBlank { "پروژه بدون عنوان" } }) {
                                         Icon(
                                             Icons.Default.Delete,
                                             contentDescription = "حذف پروژه",

@@ -21,6 +21,9 @@ interface CustomerPaymentDao {
     fun observeAllTotal(): Flow<Long>
 
     
+    @Query("SELECT * FROM customer_payments WHERE id = :id")
+    suspend fun getById(id: Long): CustomerPaymentEntity?
+
     @Query("SELECT * FROM customer_payments ORDER BY paymentDate DESC")
     suspend fun getAll(): List<CustomerPaymentEntity>
 

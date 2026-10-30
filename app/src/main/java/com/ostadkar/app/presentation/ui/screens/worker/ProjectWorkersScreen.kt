@@ -21,6 +21,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
@@ -51,7 +52,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ostadkar.app.domain.model.ProjectWorker
 import com.ostadkar.app.presentation.ui.components.DailyWorkTypeLabels
 import com.ostadkar.app.presentation.ui.components.AmountTextField
+import com.ostadkar.app.presentation.ui.components.BackupShareEffect
 import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
+import com.ostadkar.app.data.backup.BackupItem
+import com.ostadkar.app.presentation.viewmodel.BackupViewModel
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.MoneyFormatter
 import com.ostadkar.app.presentation.ui.components.PersianDateFormatter
@@ -67,11 +71,15 @@ import com.ostadkar.app.presentation.viewmodel.WorkerPayForm
 @Composable
 fun ProjectWorkersScreen(
     onBack: () -> Unit,
-    viewModel: ProjectWorkersViewModel = hiltViewModel()
+    viewModel: ProjectWorkersViewModel = hiltViewModel(),
+    backupViewModel: BackupViewModel = hiltViewModel()
 ) {
     val workers by viewModel.assignedWorkers.collectAsState()
     val dailyWorks by viewModel.dailyWorks.collectAsState()
     val payments by viewModel.workerPayments.collectAsState()
+    val backupState by backupViewModel.state.collectAsState()
+    BackupShareEffect(backupState, backupViewModel)
+
     var pendingDeletePayment by remember { mutableStateOf<Pair<Long, String>?>(null) }
     var pendingRemoveWorker by remember { mutableStateOf<Pair<Long, String>?>(null) }
 
@@ -255,6 +263,15 @@ fun ProjectWorkersScreen(
                                     "${MoneyFormatter.format(p.amount)} — ${PaymentMethodLabels.label(p.method)}",
                                     style = MaterialTheme.typography.bodyMedium
                                 )
+                            }
+                            IconButton(onClick = {
+                                backupViewModel.exportItem(
+                                    BackupItem.WORKER_PAYMENT,
+                                    p.id,
+                                    MoneyFormatter.format(p.amount)
+                                )
+                            }) {
+                                Icon(Icons.Default.Share, contentDescription = "پشتیبان", tint = MaterialTheme.colorScheme.primary)
                             }
                             IconButton(onClick = { pendingDeletePayment = p.id to MoneyFormatter.format(p.amount) }) {
                                 Icon(Icons.Default.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)

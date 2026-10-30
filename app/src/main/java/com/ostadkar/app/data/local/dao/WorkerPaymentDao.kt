@@ -27,6 +27,9 @@ interface WorkerPaymentDao {
     fun observeAllTotal(): Flow<Long>
 
     
+    @Query("SELECT * FROM worker_payments WHERE id = :id")
+    suspend fun getById(id: Long): WorkerPaymentEntity?
+
     @Query("SELECT * FROM worker_payments ORDER BY paymentDate DESC")
     suspend fun getAll(): List<WorkerPaymentEntity>
 

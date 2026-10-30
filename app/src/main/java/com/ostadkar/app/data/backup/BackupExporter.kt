@@ -23,6 +23,17 @@ enum class BackupSection(val filePrefix: String, val titleFa: String) {
     ALL("all_data", "همه داده‌ها")
 }
 
+enum class BackupItem(val filePrefix: String) {
+    WORKER("worker"),
+    CUSTOMER("customer"),
+    PROJECT("project"),
+    WORK_ITEM("work_item"),
+    CUSTOMER_PAYMENT("customer_payment"),
+    WORKER_PAYMENT("worker_payment"),
+    DAILY_WORK("daily_work"),
+    EXPENSE("expense")
+}
+
 @Singleton
 class BackupExporter @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -42,6 +53,25 @@ class BackupExporter @Inject constructor(
         val dir = File(context.cacheDir, "backups").apply { mkdirs() }
         val stamp = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())
         val file = File(dir, "ostadkar_${section.filePrefix}_$stamp.txt")
+        file.writeText(body, Charsets.UTF_8)
+        return file
+    }
+
+    suspend fun exportItem(item: BackupItem, id: Long): File {
+        val (title, body) = when (item) {
+            BackupItem.WORKER -> "کارگر" to buildOneWorker(id)
+            BackupItem.CUSTOMER -> "کارفرما" to buildOneCustomer(id)
+            BackupItem.PROJECT -> "پروژه" to buildOneProject(id)
+            BackupItem.WORK_ITEM -> "متراژ کار" to buildOneWorkItem(id)
+            BackupItem.CUSTOMER_PAYMENT -> "دریافتی" to buildOneCustomerPayment(id)
+            BackupItem.WORKER_PAYMENT -> "پرداخت کارگر" to buildOneWorkerPayment(id)
+            BackupItem.DAILY_WORK -> "کارکرد روزانه" to buildOneDailyWork(id)
+            BackupItem.EXPENSE -> "هزینه" to buildOneExpense(id)
+        }
+        val dir = File(context.cacheDir, "backups").apply { mkdirs() }
+        val stamp = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())
+        val safe = title.replace(" ", "_")
+        val file = File(dir, "ostadkar_${item.filePrefix}_${id}_$stamp.txt")
         file.writeText(body, Charsets.UTF_8)
         return file
     }
@@ -243,4 +273,150 @@ class BackupExporter @Inject constructor(
         sb.appendLine(buildExpenses())
         return sb.toString()
     }
+
+
+    private suspend fun buildOneWorker(id: Long): String {
+        val w = db.workerDao().getById(id) ?: return header("کارگر").appendLine("یافت نشد.").toString()
+        val sb = header("کارگر: ${w.name}")
+        val type = if (w.type == "master") "استادکار" else "کارگر"
+        sb.appendLine("نام: ${w.name}")
+        sb.appendLine("نوع: $type")
+        if (w.mobile.isNotBlank()) sb.appendLine("موبایل: ${w.mobile}")
+        if (w.specialty.isNotBlank()) sb.appendLine("تخصص: ${w.specialty}")
+        if (w.defaultDailyWage > 0) sb.appendLine("دستمزد روزانه: ${money(w.defaultDailyWage)}")
+        if (w.notes.isNotBlank()) sb.appendLine("یادداشت: ${w.notes}")
+        return sb.toString()
+    }
+
+    private suspend fun buildOneCustomer(id: Long): String {
+        val c = db.customerDao().getById(id) ?: return header("کارفرما").appendLine("یافت نشد.").toString()
+        val sb = header("کارفرما: ${c.name}")
+        sb.appendLine("نام: ${c.name}")
+        if (c.mobile.isNotBlank()) sb.appendLine("موبایل: ${c.mobile}")
+        if (c.address.isNotBlank()) sb.appendLine("آدرس: ${c.address}")
+        if (c.notes.isNotBlank()) sb.appendLine("یادداشت: ${c.notes}")
+        val projects = db.projectDao().getAll().filter { it.customerId == id }
+        if (projects.isNotEmpty()) {
+            sb.appendLine()
+            sb.appendLine("— پروژه‌های این کارفرما —")
+            projects.forEachIndexed { i, p ->
+                sb.appendLine("${i + 1}) ${p.title.ifBlank { "بدون عنوان" }} | ${p.status}")
+            }
+        }
+        return sb.toString()
+    }
+
+    private suspend fun buildOneProject(id: Long): String {
+        val p = db.projectDao().getById(id) ?: return header("پروژه").appendLine("یافت نشد.").toString()
+        val c = db.customerDao().getById(p.customerId)
+        val sb = header("پروژه: ${p.title.ifBlank { "بدون عنوان" }}")
+        sb.appendLine("عنوان: ${p.title.ifBlank { "بدون عنوان" }}")
+        sb.appendLine("کارفرما: ${c?.name ?: "—"}")
+        if (!c?.mobile.isNullOrBlank()) sb.appendLine("موبایل کارفرما: ${c?.mobile}")
+        if (p.address.isNotBlank()) sb.appendLine("آدرس: ${p.address}")
+        sb.appendLine("وضعیت: ${p.status}")
+        if (p.description.isNotBlank()) sb.appendLine("توضیحات: ${p.description}")
+        sb.appendLine("شروع: ${fmtDate(p.startDate)}")
+        sb.appendLine()
+        sb.appendLine("— متراژ و آیتم‌های کار —")
+        val items = db.workItemDao().getByProject(id)
+        if (items.isEmpty()) sb.appendLine("موردی نیست.")
+        else items.forEachIndexed { i, it ->
+            sb.appendLine("${i + 1}) ${it.workTypeName} — ${it.workLocationName}")
+            sb.appendLine("   مقدار: ${MoneyFormatter.toPersianDigits(it.quantity.toString())} | مبلغ: ${money(it.totalPrice)}")
+        }
+        sb.appendLine()
+        sb.appendLine("— دریافتی از مشتری —")
+        val pays = db.customerPaymentDao().getAll().filter { it.projectId == id }
+        if (pays.isEmpty()) sb.appendLine("موردی نیست.")
+        else pays.forEachIndexed { i, pay ->
+            sb.appendLine("${i + 1}) ${money(pay.amount)} | ${fmtDate(pay.paymentDate)} | ${pay.method}")
+        }
+        sb.appendLine()
+        sb.appendLine("— پرداخت کارگران —")
+        val wp = db.workerPaymentDao().getAll().filter { it.projectId == id }
+        val workers = db.workerDao().getAll().associateBy { it.id }
+        if (wp.isEmpty()) sb.appendLine("موردی نیست.")
+        else wp.forEachIndexed { i, pay ->
+            val name = workers[pay.workerId]?.name ?: "—"
+            sb.appendLine("${i + 1}) $name | ${money(pay.amount)} | ${fmtDate(pay.paymentDate)}")
+        }
+        sb.appendLine()
+        sb.appendLine("— هزینه‌ها —")
+        val ex = db.projectExpenseDao().getAll().filter { it.projectId == id }
+        if (ex.isEmpty()) sb.appendLine("موردی نیست.")
+        else ex.forEachIndexed { i, e ->
+            sb.appendLine("${i + 1}) ${e.title} | ${money(e.amount)} | ${fmtDate(e.expenseDate)}")
+        }
+        return sb.toString()
+    }
+
+    private suspend fun buildOneWorkItem(id: Long): String {
+        val it = db.workItemDao().getById(id) ?: return header("متراژ کار").appendLine("یافت نشد.").toString()
+        val p = db.projectDao().getById(it.projectId)
+        val sb = header("متراژ کار")
+        sb.appendLine("پروژه: ${p?.title ?: "—"}")
+        sb.appendLine("نوع کار: ${it.workTypeName}")
+        sb.appendLine("محل: ${it.workLocationName}")
+        sb.appendLine("مقدار: ${MoneyFormatter.toPersianDigits(it.quantity.toString())}")
+        sb.appendLine("قیمت واحد: ${money(it.unitPrice)}")
+        sb.appendLine("جمع: ${money(it.totalPrice)}")
+        if (it.notes.isNotBlank()) sb.appendLine("یادداشت: ${it.notes}")
+        return sb.toString()
+    }
+
+    private suspend fun buildOneCustomerPayment(id: Long): String {
+        val pay = db.customerPaymentDao().getById(id) ?: return header("دریافتی").appendLine("یافت نشد.").toString()
+        val p = db.projectDao().getById(pay.projectId)
+        val sb = header("دریافتی از مشتری")
+        sb.appendLine("پروژه: ${p?.title ?: "—"}")
+        sb.appendLine("مبلغ: ${money(pay.amount)}")
+        sb.appendLine("تاریخ: ${fmtDate(pay.paymentDate)}")
+        sb.appendLine("روش: ${pay.method}")
+        if (pay.notes.isNotBlank()) sb.appendLine("توضیحات: ${pay.notes}")
+        return sb.toString()
+    }
+
+    private suspend fun buildOneWorkerPayment(id: Long): String {
+        val pay = db.workerPaymentDao().getById(id) ?: return header("پرداخت کارگر").appendLine("یافت نشد.").toString()
+        val p = db.projectDao().getById(pay.projectId)
+        val w = db.workerDao().getById(pay.workerId)
+        val sb = header("پرداخت کارگر")
+        sb.appendLine("کارگر: ${w?.name ?: "—"}")
+        sb.appendLine("پروژه: ${p?.title ?: "—"}")
+        sb.appendLine("مبلغ: ${money(pay.amount)}")
+        sb.appendLine("تاریخ: ${fmtDate(pay.paymentDate)}")
+        sb.appendLine("نوع: ${pay.paymentType} | روش: ${pay.method}")
+        if (pay.notes.isNotBlank()) sb.appendLine("توضیحات: ${pay.notes}")
+        return sb.toString()
+    }
+
+    private suspend fun buildOneDailyWork(id: Long): String {
+        val d = db.dailyWorkDao().getById(id) ?: return header("کارکرد روزانه").appendLine("یافت نشد.").toString()
+        val p = db.projectDao().getById(d.projectId)
+        val w = db.workerDao().getById(d.workerId)
+        val sb = header("کارکرد روزانه")
+        sb.appendLine("کارگر: ${w?.name ?: "—"}")
+        sb.appendLine("پروژه: ${p?.title ?: "—"}")
+        sb.appendLine("تاریخ: ${fmtDate(d.workDate)}")
+        sb.appendLine("نوع: ${d.workType}")
+        if (d.hours > 0) sb.appendLine("ساعت: ${MoneyFormatter.toPersianDigits(d.hours.toString())}")
+        sb.appendLine("دستمزد پایه: ${money(d.baseWage)}")
+        if (d.notes.isNotBlank()) sb.appendLine("یادداشت: ${d.notes}")
+        return sb.toString()
+    }
+
+    private suspend fun buildOneExpense(id: Long): String {
+        val e = db.projectExpenseDao().getById(id) ?: return header("هزینه").appendLine("یافت نشد.").toString()
+        val p = db.projectDao().getById(e.projectId)
+        val sb = header("هزینه")
+        sb.appendLine("پروژه: ${p?.title ?: "—"}")
+        sb.appendLine("عنوان: ${e.title}")
+        sb.appendLine("مبلغ: ${money(e.amount)}")
+        sb.appendLine("دسته: ${e.category}")
+        sb.appendLine("تاریخ: ${fmtDate(e.expenseDate)}")
+        if (e.notes.isNotBlank()) sb.appendLine("توضیحات: ${e.notes}")
+        return sb.toString()
+    }
+
 }

@@ -150,7 +150,7 @@ fun SettingsScreen(
             }
 
             SectionCard(title = "برنامه") {
-                SettingRow(Icons.Default.PhoneAndroid, "نسخه", "۱.۲.۴")
+                SettingRow(Icons.Default.PhoneAndroid, "نسخه", "۱.۲.۵")
                 HorizontalDivider()
                 SettingRow(Icons.Default.Language, "زبان", "فارسی")
                 HorizontalDivider()
@@ -167,7 +167,7 @@ fun SettingsScreen(
 
             SectionCard(title = "پشتیبان‌گیری") {
                 Text(
-                    text = "هر بخش را جداگانه به فایل متنی تبدیل کنید؛ سپس ذخیره یا ارسال (تلگرام، ایمیل، درایو و …).",
+                    text = "پشتیبان گروهی هر بخش اینجاست. برای یک کارگر، کارفرما، پروژه یا متراژ مشخص، از آیکن اشتراک در همان لیست استفاده کنید.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

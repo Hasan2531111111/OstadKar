@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -39,9 +40,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ostadkar.app.presentation.ui.components.BackupShareEffect
 import com.ostadkar.app.presentation.ui.components.ConfirmDeleteDialog
 import com.ostadkar.app.presentation.ui.components.EmptyState
 import com.ostadkar.app.presentation.ui.components.OstadTopBar
+import com.ostadkar.app.data.backup.BackupItem
+import com.ostadkar.app.presentation.viewmodel.BackupViewModel
 import com.ostadkar.app.presentation.viewmodel.CustomersViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,10 +53,14 @@ import com.ostadkar.app.presentation.viewmodel.CustomersViewModel
 fun CustomersScreen(
     onBack: () -> Unit,
     onCustomerClick: (Long) -> Unit = {},
-    viewModel: CustomersViewModel = hiltViewModel()
+    viewModel: CustomersViewModel = hiltViewModel(),
+    backupViewModel: BackupViewModel = hiltViewModel()
 ) {
     val customers by viewModel.customers.collectAsState()
     val form by viewModel.form.collectAsState()
+    val backupState by backupViewModel.state.collectAsState()
+    BackupShareEffect(backupState, backupViewModel)
+
     var pendingDelete by remember { mutableStateOf<Pair<Long, String>?>(null) }
 
     pendingDelete?.let { (id, name) ->
@@ -175,6 +183,15 @@ fun CustomersScreen(
                         }
                         IconButton(onClick = { viewModel.editCustomer(customer) }) {
                             Icon(Icons.Default.Edit, contentDescription = "ویرایش", tint = MaterialTheme.colorScheme.primary)
+                        }
+                        IconButton(onClick = {
+                            backupViewModel.exportItem(
+                                BackupItem.CUSTOMER,
+                                customer.id,
+                                customer.name
+                            )
+                        }) {
+                            Icon(Icons.Default.Share, contentDescription = "پشتیبان", tint = MaterialTheme.colorScheme.primary)
                         }
                         IconButton(onClick = { pendingDelete = customer.id to customer.name }) {
                             Icon(Icons.Default.Delete, contentDescription = "حذف", tint = MaterialTheme.colorScheme.error)

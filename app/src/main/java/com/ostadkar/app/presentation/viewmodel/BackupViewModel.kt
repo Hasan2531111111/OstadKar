@@ -3,6 +3,7 @@ package com.ostadkar.app.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ostadkar.app.data.backup.BackupExporter
+import com.ostadkar.app.data.backup.BackupItem
 import com.ostadkar.app.data.backup.BackupSection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,6 +37,25 @@ class BackupViewModel @Inject constructor(
                     isWorking = false,
                     lastFile = file,
                     lastSectionTitle = section.titleFa
+                )
+            } catch (e: Exception) {
+                _state.value = BackupUiState(
+                    isWorking = false,
+                    error = e.message ?: "خطا در تهیه پشتیبان"
+                )
+            }
+        }
+    }
+
+    fun exportItem(item: BackupItem, id: Long, title: String) {
+        viewModelScope.launch {
+            _state.value = BackupUiState(isWorking = true)
+            try {
+                val file = exporter.exportItem(item, id)
+                _state.value = BackupUiState(
+                    isWorking = false,
+                    lastFile = file,
+                    lastSectionTitle = title
                 )
             } catch (e: Exception) {
                 _state.value = BackupUiState(
